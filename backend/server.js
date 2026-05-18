@@ -7,11 +7,25 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Backend Server Running");
+  res.send("Backend Running");
 });
 
-const PORT = 5000;
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  if (email && password) {
+    res.json({
+      success: true,
+      message: "Login Success",
+    });
+  } else {
+    res.json({
+      success: false,
+      message: "Invalid Credentials",
+    });
+  }
+});
+
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });
