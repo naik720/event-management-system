@@ -1,159 +1,347 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 const Login = () => {
+
+
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+
+  // Email validation: must contain letters, numbers, special chars, and be valid format
+  const validateEmail = (email) => {
+    // RFC 5322 Official Standard
+    const re = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    // Must contain at least one letter, one number, one special char
+    const hasLetter = /[A-Za-z]/.test(email);
+    const hasNumber = /[0-9]/.test(email);
+    const hasSpecial = /[._%+-]/.test(email);
+    return re.test(email) && hasLetter && hasNumber && hasSpecial;
+  };
+
+  // Password validation: min 6 chars, number, special char, capital letter
+  const validatePassword = (password) => {
+    return (
+      password.length >= 6 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
+  // Handle Input
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError("");
+    setSuccess("");
+  };
+
+
+  // Login Submit
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    const { email, password } = formData;
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError("Invalid email. Use letters, numbers, special characters, and valid format.");
+      return;
+    }
+    if (!validatePassword(password)) {
+      setError("Password must be at least 6 characters, include a capital letter, number, and special character.");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/login",
+        formData
+      );
+      setSuccess("Login successfully");
+      setError("");
+      // Optionally, redirect or store token here
+    } catch (error) {
+      // Custom error handling for email/password
+      const msg = error?.response?.data?.message || "Login failed. Please try again.";
+      if (msg.toLowerCase().includes("email")) {
+        setError("Email is not correct");
+      } else if (msg.toLowerCase().includes("password")) {
+        setError("Password is not correct");
+      } else {
+        setError(msg);
+      }
+      setSuccess("");
+    }
+  };
+
+  // Forgot Password Navigation
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
+  };
+
   return (
-    <main className="flex min-h-screen">
-      
-      {/* Left Section */}
-      <section className="hidden lg:flex w-1/2 relative overflow-hidden bg-black">
-        
+    <main className="min-h-screen flex bg-[#020617]">
+
+      {/* LEFT SIDE */}
+      <section className="hidden lg:flex w-1/2 relative overflow-hidden">
+
+        {/* Background Image */}
         <img
-          src="https://images.unsplash.com/photo-1511578314322-379afb476865"
+          src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1600&auto=format&fit=crop"
           alt="event"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          className="absolute inset-0 w-full h-full object-cover"
         />
 
+        {/* Dark Overlay */}
         <div className="absolute inset-0 bg-black/60"></div>
 
-        <div className="relative z-10 flex flex-col justify-between p-10 text-white w-full">
+        {/* Blue Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-[#020617]/40 to-[#020617]/90"></div>
 
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">
-              EventCommand
+        {/* Glow Effect */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/20 blur-3xl rounded-full"></div>
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+
+            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg">
+
+              <span className="text-2xl font-bold">
+                E
+              </span>
+
+            </div>
+
+            <h1 className="text-4xl font-bold">
+              Evito
             </h1>
+
           </div>
 
-          <div>
-            <h2 className="text-5xl font-bold leading-tight mb-6">
-              Command your event lifecycle with precision.
+          {/* Main Content */}
+          <div className="max-w-xl">
+
+            <h2 className="text-7xl font-extrabold leading-tight mb-6">
+
+              EVENTS
+              <br />
+
+              <span className="text-blue-400">
+                THAT INSPIRE
+              </span>
+
             </h2>
 
-            <p className="text-gray-300 text-lg">
-              The unified platform for professional event logistics,
-              vendor coordination, and high-stakes execution.
-            </p>
-          </div>
+            <p className="text-blue-100 text-2xl leading-relaxed mb-10">
 
-          <div>
-            <p className="uppercase tracking-widest text-sm text-gray-300">
-              Trusted by 500+ Global Agencies
+              Discover, book, and experience extraordinary
+              events around the world.
+
             </p>
+
+            {/* Bottom Info */}
+            <div className="flex items-center gap-5">
+
+              <div className="w-16 h-16 rounded-full bg-blue-500/30 backdrop-blur-md flex items-center justify-center">
+
+                👥
+
+              </div>
+
+              <p className="text-xl text-blue-100 leading-relaxed">
+
+                Join thousands of event lovers and create unforgettable memories.
+
+              </p>
+
+            </div>
+
           </div>
 
         </div>
       </section>
 
-      {/* Right Section */}
-      <section className="w-full lg:w-1/2 flex items-center justify-center bg-gray-100 p-6">
-        
-        <div className="w-full max-w-md">
+      {/* RIGHT SIDE */}
+      <section className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-[#020617]">
 
-          <h2 className="text-4xl font-bold mb-2">
-            Welcome back
+        {/* Glass Card */}
+        <div className="w-full max-w-xl bg-white/10 backdrop-blur-2xl border border-white/10 rounded-[35px] p-10 shadow-2xl">
+
+          {/* Heading */}
+          <h2 className="text-5xl font-bold text-white mb-3">
+            Welcome Back
           </h2>
 
-          <p className="text-gray-500 mb-8">
-            Please enter your credentials to access the console.
+          <p className="text-gray-300 text-lg mb-10">
+            Login to continue your journey with Evito.
           </p>
 
-          {/* Role Buttons */}
-          <div className="grid grid-cols-4 gap-2 bg-gray-200 p-1 rounded mb-6">
+          {/* Form */}
+          <form onSubmit={handleLogin}>
 
-            <button className="bg-white py-2 rounded font-semibold">
-              Admin
-            </button>
+            {/* Email */}
+            <div className="mb-6">
 
-            <button className="py-2 rounded">
-              Staff
-            </button>
-
-            <button className="py-2 rounded">
-              Vendor
-            </button>
-
-            <button className="py-2 rounded">
-              Client
-            </button>
-
-          </div>
-
-          {/* Email */}
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-semibold">
-              EMAIL ADDRESS
-            </label>
-
-            <input
-              type="email"
-              placeholder="name@organization.com"
-              className="w-full p-4 border rounded-lg outline-none"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="mb-4">
-
-            <div className="flex justify-between mb-2">
-              <label className="text-sm font-semibold">
-                PASSWORD
+              <label className="block text-white mb-3 text-lg">
+                Email
               </label>
 
-              <button className="text-blue-600 text-sm">
-                Forgot Password?
-              </button>
+              <div className="flex items-center border border-white/20 rounded-2xl px-5 bg-white/5">
+
+                <Mail className="text-gray-300" />
+
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-5 bg-transparent outline-none text-white placeholder:text-gray-400"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="username"
+                />
+              </div>
+
             </div>
 
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full p-4 border rounded-lg outline-none"
-            />
-          </div>
+            {/* Password */}
+            <div className="mb-4">
 
-          {/* Remember */}
-          <div className="flex items-center gap-2 mb-6">
-            <input type="checkbox" />
-            <span>Remember Me</span>
-          </div>
+              <div className="flex justify-between items-center mb-3">
 
-          {/* Login Button */}
-          <button className="w-full bg-black text-white py-4 rounded-xl font-bold mb-6">
-            AUTHORIZE ACCESS →
-          </button>
+                <label className="text-white text-lg">
+                  Password
+                </label>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 border"></div>
+                <button
+                  type="button"
+                  className="text-blue-400 hover:underline"
+                  onClick={handleForgotPassword}
+                >
+                  Forgot password?
+                </button>
 
-            <span className="text-sm text-gray-500">
-              OR CONTINUE WITH
-            </span>
+              </div>
 
-            <div className="flex-1 border"></div>
-          </div>
+              <div className="flex items-center border border-white/20 rounded-2xl px-5 bg-white/5">
 
-          {/* Google Button */}
-          <button className="w-full border py-4 rounded-xl bg-white">
-            Organization Single Sign-On (SSO)
-          </button>
+                <Lock className="text-gray-300" />
+
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-5 bg-transparent outline-none text-white placeholder:text-gray-400"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                />
+
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={0}
+                >
+                  {showPassword ? (
+                    <Eye className="text-gray-300" />
+                  ) : (
+                    <EyeOff className="text-gray-300" />
+                  )}
+                </button>
+
+              </div>
+
+            </div>
+
+
+            {/* Error Popup */}
+            {error && (
+              <div className="bg-red-600 text-white px-4 py-2 rounded-xl mb-4 text-center font-semibold">
+                {error}
+              </div>
+            )}
+            {/* Success Popup */}
+            {success && (
+              <div className="bg-green-600 text-white px-4 py-2 rounded-xl mb-4 text-center font-semibold">
+                {success}
+              </div>
+            )}
+
+            {/* Login Button */}
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-90 transition py-5 rounded-2xl text-white font-bold text-lg mt-8 shadow-lg"
+            >
+              SIGN IN
+            </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-8">
+
+              <div className="flex-1 border-t border-white/20"></div>
+
+              <span className="text-gray-300">
+                or
+              </span>
+
+              <div className="flex-1 border-t border-white/20"></div>
+
+            </div>
+
+            {/* Google Login */}
+            <button
+              type="button"
+              className="w-full bg-white hover:bg-gray-100 transition py-5 rounded-2xl flex items-center justify-center gap-3 text-black font-semibold text-lg"
+            >
+
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/300/300221.png"
+                alt="google"
+                className="w-6 h-6"
+              />
+
+              Sign in with Google
+
+            </button>
+
+          </form>
 
           {/* Footer */}
           <div className="mt-10 text-center">
 
-            <p className="text-gray-500">
-              Don't have an organization account?
-              <span className="text-blue-600 font-semibold cursor-pointer">
-                {" "}Contact Support
-              </span>
-            </p>
+            <p className="text-gray-300 text-lg">
 
-            <div className="flex justify-center gap-3 mt-4 text-xs text-gray-400 uppercase">
-              <span>Security Policy</span>
-              <span>•</span>
-              <span>Privacy Terms</span>
-              <span>•</span>
-              <span>v4.2.0-PRO</span>
-            </div>
+              Don’t have an account?
+
+              <span className="text-blue-400 ml-2 cursor-pointer hover:underline">
+                Create Account
+              </span>
+
+            </p>
 
           </div>
 
