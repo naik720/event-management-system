@@ -4,6 +4,11 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+
+/* =========================
+   Background Images API
+========================= */
 
 const images = [
   "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
@@ -16,6 +21,74 @@ const images = [
 app.get("/api/images", (req, res) => {
   res.json(images);
 });
+
+/* =========================
+   Events API
+========================= */
+
+const events = [
+  {
+    id: 1,
+    title: "Rock Music Festival",
+    location: "Jaipur",
+    price: 499,
+    image:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
+  },
+
+  {
+    id: 2,
+    title: "DJ Night",
+    location: "Delhi",
+    price: 699,
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a",
+  },
+
+  {
+    id: 3,
+    title: "Tech Expo",
+    location: "Mumbai",
+    price: 999,
+    image:
+      "https://images.unsplash.com/photo-1511578314322-379afb476865",
+  },
+
+  {
+    id: 4,
+    title: "Food Festival",
+    location: "Bangalore",
+    price: 299,
+    image:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+  },
+
+  {
+    id: 5,
+    title: "Startup Meetup",
+    location: "Hyderabad",
+    price: 799,
+    image:
+      "https://images.unsplash.com/photo-1515169067868-5387ec356754",
+  },
+
+  {
+    id: 6,
+    title: "Dance Concert",
+    location: "Pune",
+    price: 599,
+    image:
+      "https://images.unsplash.com/photo-1506157786151-b8491531f063",
+  },
+];
+
+app.get("/api/events", (req, res) => {
+  res.json(events);
+});
+
+/* =========================
+   Server Start
+========================= */
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
