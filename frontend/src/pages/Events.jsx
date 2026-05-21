@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 function Events() {
 
@@ -15,27 +16,42 @@ function Events() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-20 px-5">
-      <div className="grid md:grid-cols-3 gap-10">
+    <div className="min-h-screen bg-gray-100 p-10">
+
+      <h1 className="text-5xl font-bold text-center mb-16">
+        Events
+      </h1><div className="grid md:grid-cols-3 gap-10">
+
         {events.map((event) => (
           <div
             key={event.id}
-            className="bg-white rounded-3xl overflow-hidden shadow-lg hover:scale-105 duration-300"
+            className="bg-white rounded-3xl overflow-hidden shadow-xl"
           >
+
             <img
               src={event.image}
               alt=""
-              className="h-64 w-full object-cover"
+              className="w-full h-64 object-cover"
             />
+
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">
+
+              <h2 className="text-2xl font-bold">
                 {event.title}
-              </h2>
-              <p className="text-gray-500 mb-3">
+              </h2><p className="text-gray-500 mt-2">
                 {event.location}
-              </p><p className="text-pink-500 font-bold text-2xl">
+              </p>
+
+              <p className="text-pink-500 text-2xl font-bold mt-3">
                 ₹{event.price}
               </p>
+
+              <Link to={`/event/${event.id}`}>
+                <button className="mt-5 bg-pink-500 text-white px-6 py-3 rounded-full">
+                  View Details
+                </button>
+              </Link>
+
             </div>
           </div>
         ))}
@@ -44,5 +60,4 @@ function Events() {
     </div>
   );
 }
-
 export default Events;

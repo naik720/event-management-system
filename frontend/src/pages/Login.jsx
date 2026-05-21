@@ -62,7 +62,7 @@ function Login() {
             <input
               type="email"
               placeholder="Enter your email"
-              className="w-full p-4 rounded-xl mb-5 outline-none text-black"
+              className="w-full p-4 rounded-xl mb-5 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
             />
 
             <div className="flex justify-between mb-2">
@@ -74,7 +74,7 @@ function Login() {
             <input
               type="password"
               placeholder="Enter password"
-              className="w-full p-4 rounded-xl mb-6 outline-none text-black"
+              className="w-full p-4 rounded-xl mb-6 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
             />
 
             <button

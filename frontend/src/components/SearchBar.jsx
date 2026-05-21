@@ -23,9 +23,11 @@ function SearchBar() {
           className="border p-4 rounded-xl"
         />
 
-        <button className="bg-pink-500 text-white rounded-xl text-lg font-semibold">
-          SEARCH
-        </button>
+        <a href="/login" className="w-full">
+          <button className="bg-pink-500 text-white rounded-xl text-lg font-semibold w-full">
+            SEARCH
+          </button>
+        </a>
       </div>
     </div>
   );
