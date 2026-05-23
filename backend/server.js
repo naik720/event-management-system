@@ -29,61 +29,190 @@ app.get("/api/images", (req, res) => {
 const events = [
   {
     id: 1,
-    title: "Rock Music Festival",
-    location: "Jaipur",
-    price: 499,
-    image:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
+    title: "Music Concert 2026",
+    category: "Music",
+    date: "May 25, 2026",
+    time: "7:00 PM",
+    location: "Auditorium Hall",
+    price: 45,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80",
   },
-
   {
     id: 2,
-    title: "DJ Night",
-    location: "Delhi",
-    price: 699,
-    image:
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a",
+    title: "Tech Conference",
+    category: "Tech",
+    date: "Jun 10, 2026",
+    time: "9:00 AM",
+    location: "Tech Park, New York",
+    price: 99,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
   },
-
   {
     id: 3,
-    title: "Tech Expo",
-    location: "Mumbai",
-    price: 999,
-    image:
-      "https://images.unsplash.com/photo-1511578314322-379afb476865",
+    title: "Design Workshop",
+    category: "Workshop",
+    date: "Jun 18, 2026",
+    time: "2:00 PM",
+    location: "Creative Hub",
+    price: 35,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80",
   },
-
   {
     id: 4,
-    title: "Food Festival",
-    location: "Bangalore",
-    price: 299,
-    image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+    title: "Food Festival 2026",
+    category: "Food & Drink",
+    date: "Jun 05, 2026",
+    time: "11:00 AM",
+    location: "Central Park",
+    price: 0,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=700&q=80",
   },
-
   {
     id: 5,
-    title: "Startup Meetup",
-    location: "Hyderabad",
-    price: 799,
-    image:
-      "https://images.unsplash.com/photo-1515169067868-5387ec356754",
+    title: "Art Exhibition",
+    category: "Art & Culture",
+    date: "Jun 12, 2026",
+    time: "10:00 AM",
+    location: "Art Gallery",
+    price: 15,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=700&q=80",
   },
-
   {
     id: 6,
-    title: "Dance Concert",
-    location: "Pune",
-    price: 599,
-    image:
-      "https://images.unsplash.com/photo-1506157786151-b8491531f063",
+    title: "Sports Event Live",
+    category: "Sports",
+    date: "Jun 20, 2026",
+    time: "6:00 PM",
+    location: "Stadium Arena",
+    price: 60,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: 7,
+    title: "Standup Comedy Night",
+    category: "Comedy",
+    date: "May 30, 2026",
+    time: "8:00 PM",
+    location: "City Theatre",
+    price: 25,
+    status: "Upcoming",
+    image: "https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: 8,
+    title: "Online Marketing Webinar",
+    category: "Business",
+    date: "Jun 15, 2026",
+    time: "3:00 PM",
+    location: "Online Event",
+    price: 0,
+    status: "Online",
+    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=700&q=80",
   },
 ];
 
 app.get("/api/events", (req, res) => {
-  res.json(events);
+  const { search = "", category = "", location = "", sort = "earliest" } = req.query;
+  const searchText = search.toLowerCase();
+
+  const filteredEvents = events
+    .filter((event) => {
+      const matchesSearch =
+        event.title.toLowerCase().includes(searchText) ||
+        event.category.toLowerCase().includes(searchText) ||
+        event.location.toLowerCase().includes(searchText);
+      const matchesCategory = !category || event.category === category;
+      const matchesLocation = !location || event.location === location;
+
+      return matchesSearch && matchesCategory && matchesLocation;
+    })
+    .sort((a, b) => {
+      if (sort === "price-low") return a.price - b.price;
+      if (sort === "price-high") return b.price - a.price;
+      return new Date(a.date) - new Date(b.date);
+    });
+
+  res.json(filteredEvents);
+});
+
+/* =========================
+   Bookings API
+========================= */
+
+const bookings = [
+  {
+    id: "BK-2026-001",
+    title: "Music Concert 2026",
+    date: "May 25, 2026",
+    time: "7:00 PM",
+    location: "Auditorium Hall, New York",
+    status: "Confirmed",
+    amount: 320,
+    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "BK-2026-002",
+    title: "Tech Conference",
+    date: "Jun 10, 2026",
+    time: "9:00 AM",
+    location: "Tech Park, New York",
+    status: "Pending",
+    amount: 450,
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "BK-2026-003",
+    title: "Design Workshop",
+    date: "Jun 18, 2026",
+    time: "2:00 PM",
+    location: "Creative Hub, New York",
+    status: "Confirmed",
+    amount: 180,
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "BK-2026-004",
+    title: "Food Festival 2026",
+    date: "Jul 05, 2026",
+    time: "6:00 PM",
+    location: "Central Park, New York",
+    status: "Cancelled",
+    amount: 150,
+    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "BK-2026-005",
+    title: "Sports Event Live",
+    date: "Jun 20, 2026",
+    time: "8:00 PM",
+    location: "Stadium Arena, New York",
+    status: "Confirmed",
+    amount: 280,
+    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=500&q=80",
+  },
+];
+
+app.get("/api/bookings", (req, res) => {
+  const { status = "All Bookings", search = "" } = req.query;
+  const searchText = search.toLowerCase();
+
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesStatus = status === "All Bookings" || booking.status === status;
+    const matchesSearch =
+      booking.title.toLowerCase().includes(searchText) ||
+      booking.id.toLowerCase().includes(searchText) ||
+      booking.location.toLowerCase().includes(searchText);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  res.json(filteredBookings);
 });
 
 /* =========================

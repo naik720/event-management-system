@@ -1,26 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
 
-  const images = [
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
-    "https://images.unsplash.com/photo-1505236858219-8359eb29e329",
-    "https://images.unsplash.com/photo-1511578314322-379afb476865",
-    "https://images.unsplash.com/photo-1523580494863-6f3031224c94",
-    "https://images.unsplash.com/photo-1505373877841-8d25f7d46678",
-  ];
+  const images = useMemo(
+    () => [
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      "https://images.unsplash.com/photo-1505236858219-8359eb29e329",
+      "https://images.unsplash.com/photo-1511578314322-379afb476865",
+      "https://images.unsplash.com/photo-1523580494863-6f3031224c94",
+      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678",
+    ],
+    []
+  );
 
   const [currentImage, setCurrentImage] = useState(0);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 5000); // Transitions comfortably every 5 seconds
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [images.length]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
+
+    if (!savedUser) {
+      setError("Please create an account before login.");
+      return;
+    }
+
+    const isEmailMatch = savedUser.email === formData.email.trim().toLowerCase();
+    const isPasswordMatch = savedUser.password === formData.password;
+
+    if (!isEmailMatch || !isPasswordMatch) {
+      setError("Email or password is incorrect.");
+      return;
+    }
+
+    localStorage.setItem("loggedInUser", JSON.stringify(savedUser));
+    navigate("/user/dashboard");
+  };
 
   return (
     <main
@@ -30,13 +65,9 @@ function Login() {
         transition: "background-image 1s ease-in-out",
       }}
     >
-      {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/60"></div>
 
-      {/* Main Container */}
       <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center justify-between px-6">
-
-        {/* LEFT SIDE */}
         <div className="text-white md:w-1/2 mb-10 md:mb-0">
           <h1 className="text-6xl font-extrabold leading-tight">
             EVENTS
@@ -48,7 +79,6 @@ function Login() {
           </p>
         </div>
 
-        {/* RIGHT SIDE */}
         <div className="w-full max-w-md bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[35px] p-10 shadow-2xl">
           <h2 className="text-4xl font-bold text-white mb-3 text-center">
             Welcome Back
@@ -57,10 +87,14 @@ function Login() {
             Login to continue your journey with Evito.
           </p>
 
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={handleSubmit}>
             <label className="text-white block mb-2">Email</label>
             <input
+              name="email"
               type="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
               className="w-full p-4 rounded-xl mb-5 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
             />
@@ -72,10 +106,20 @@ function Login() {
               </span>
             </div>
             <input
+              name="password"
               type="password"
+              required
+              value={formData.password}
+              onChange={handleChange}
               placeholder="Enter password"
-              className="w-full p-4 rounded-xl mb-6 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
+              className="w-full p-4 rounded-xl mb-3 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
             />
+
+            {error && (
+              <p className="mb-4 text-sm text-red-100 bg-red-500/20 border border-red-300/30 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
@@ -94,7 +138,7 @@ function Login() {
             </button>
 
             <div className="mt-8 text-center text-gray-300">
-              Don’t have an account?
+              Don't have an account?
               <span
                 onClick={() => navigate("/register")}
                 className="text-blue-400 ml-2 cursor-pointer hover:underline font-semibold"
