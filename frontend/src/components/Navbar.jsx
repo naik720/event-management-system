@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
-
 function Navbar() {
   const location = useLocation();
 
@@ -22,16 +21,18 @@ function Navbar() {
       {/* Center: Menu */}
       <ul className="flex gap-8 text-lg">
         <li>
-          {location.pathname === "/" ? (
-            <span className="cursor-default text-pink-300">Home</span>
+          {/* Updated check from "/" to "/home" to match your App.js route */}
+          {location.pathname === "/home" ? (
+            <span className="cursor-default text-pink-300 font-semibold border-b-2 border-pink-500 pb-1">Home</span>
           ) : (
-            <Link to="/">Home</Link>
+            <Link to="/home" className="hover:text-pink-300 transition">Home</Link>
           )}
         </li>
         <li>
           <a
             href="#events"
             onClick={e => handleScroll(e, "events")}
+            className="hover:text-pink-300 transition"
           >
             Events
           </a>
@@ -40,6 +41,7 @@ function Navbar() {
           <a
             href="#categories"
             onClick={e => handleScroll(e, "categories")}
+            className="hover:text-pink-300 transition"
           >
             Categories
           </a>
@@ -48,6 +50,7 @@ function Navbar() {
           <a
             href="#about"
             onClick={e => handleScroll(e, "about")}
+            className="hover:text-pink-300 transition"
           >
             About
           </a>
@@ -56,6 +59,7 @@ function Navbar() {
           <a
             href="#contact"
             onClick={e => handleScroll(e, "contact")}
+            className="hover:text-pink-300 transition"
           >
             Contact
           </a>

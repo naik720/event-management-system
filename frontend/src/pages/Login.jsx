@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 
 function Login() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ function Login() {
     return () => clearInterval(interval);
   }, [images.length]);
 
+ HEAD
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
@@ -57,6 +59,45 @@ function Login() {
     navigate("/user/dashboard");
   };
 
+  // Hook to handle the native Google popup authentication flow
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log("Google Token Received:", tokenResponse);
+
+      try {
+        // Send the access token to your Node.js backend on port 5000
+        const response = await fetch("http://localhost:5000/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token: tokenResponse.access_token }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log("Login successful! User data:", data.user);
+
+          // Save user data in localStorage for session handling
+          localStorage.setItem("user", JSON.stringify(data.user));
+
+          alert(`Welcome, ${data.user.name}!`);
+
+          // Redirect the authenticated user to the home page
+          navigate("/home");
+        } else {
+          alert("Authentication failed: " + data.message);
+        }
+      } catch (error) {
+        console.error("Error connecting to backend authentication server:", error);
+        alert("Failed to reach server. Please check if your backend is running.");
+      }
+    },
+    onError: (error) => console.log("Login Failed:", error),
+  });
+ad032d66962f4ca0a93a00ddc18786e074d9a46b
+
   return (
     <main
       className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative overflow-hidden"
@@ -75,7 +116,7 @@ function Login() {
             <span className="text-blue-400">THAT INSPIRE</span>
           </h1>
           <p className="mt-6 text-xl text-gray-200 max-w-lg">
-            Discover, book, and experience extraordinary events around the world.
+            Discover, book, and experience extraordinary events around the you.
           </p>
         </div>
 
@@ -84,7 +125,7 @@ function Login() {
             Welcome Back
           </h2>
           <p className="text-gray-200 mb-8 text-center">
-            Login to continue your journey with Evito.
+            Login to continue your journey with us.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -130,10 +171,17 @@ function Login() {
 
             <div className="text-center text-gray-300 my-5">OR</div>
 
+            {/* Google Authentication Integrated Button */}
             <button
               type="button"
-              className="w-full bg-white text-black p-4 rounded-xl font-medium hover:bg-gray-100 transition-all"
+              onClick={() => handleGoogleLogin()}
+              className="w-full bg-white text-black p-4 rounded-xl font-medium hover:bg-gray-100 transition-all flex items-center justify-center gap-3"
             >
+              <img
+                src="https://www.gstatic.com/images/branding/product/1x/gsa_android_loupe_64dp.png"
+                alt="Google logo"
+                className="w-5 h-5 object-contain"
+              />
               Sign in with Google
             </button>
 

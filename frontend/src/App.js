@@ -8,8 +8,10 @@ import {
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Home from "./pages/Home";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+ HEAD
 import Home from "./pages/Home";
 
 import Dashboard from "./user-dashboard/pages/Dashboard";
@@ -42,6 +44,9 @@ function UserProtectedRoute({ children }) {
     : <Navigate to="/login" />;
 }
 
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+ ad032d66962f4ca0a93a00ddc18786e074d9a46b
+
 function App() {
 
   return (
@@ -60,6 +65,7 @@ function App() {
         element={<Home />}
       />
 
+ HEAD
       {/* User Login/Register */}
       <Route
         path="/login"
@@ -86,6 +92,15 @@ function App() {
         element={<Navigate to="/user/dashboard" replace />}
       />
 
+      {/* Login Page */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Register Page */}
+      <Route path="/register" element={<Register />} />
+
+      {/* Admin Routes */}
+      <Route path="/admin-login" element={<AdminLogin />} />
+ad032d66962f4ca0a93a00ddc18786e074d9a46b
       <Route
         path="/user/browse-events"
         element={
@@ -159,18 +174,21 @@ function App() {
       <Route
         path="/admin/dashboard"
         element={
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         }
       />
 
+ HEAD
       {/* Catch All */}
       <Route
         path="*"
         element={<Navigate to="/home" />}
       />
 
+
+ad032d66962f4ca0a93a00ddc18786e074d9a46b
     </Routes>
   );
 }
