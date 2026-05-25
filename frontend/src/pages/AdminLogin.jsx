@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function AdminLogin() {
@@ -9,19 +9,22 @@ function AdminLogin() {
     const [loading, setLoading] = useState(false);
     const [currentImage, setCurrentImage] = useState(0);
 
-    const images = [
-        "https://images.unsplash.com/photo-1552664730-d307ca884978",
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
-        "https://images.unsplash.com/photo-1552664730-d307ca884978",
-        "https://images.unsplash.com/photo-1516534775068-bb6c2dc8e90e",
-    ];
+    const images = useMemo(
+        () => [
+            "https://images.unsplash.com/photo-1552664730-d307ca884978",
+            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+            "https://images.unsplash.com/photo-1552664730-d307ca884978",
+            "https://images.unsplash.com/photo-1516534775068-bb6c2dc8e90e",
+        ],
+        []
+    );
 
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentImage((prev) => (prev + 1) % images.length);
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [images.length]);
 
     const handleLogin = async (e) => {
         e.preventDefault();

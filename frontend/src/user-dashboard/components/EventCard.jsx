@@ -1,7 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin } from "lucide-react";
 
-const EventCard = ({ image, title, date, location, compact = false, tag }) => {
+const EventCard = ({ id, image, title, date, location, compact = false, tag }) => {
+  const navigate = useNavigate();
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    if (id) navigate(`/user/event/${id}`);
+  };
   return (
     <div className={compact ? "event-card event-card-compact" : "event-card"}>
       <img src={image} alt={title} />
@@ -24,6 +30,11 @@ const EventCard = ({ image, title, date, location, compact = false, tag }) => {
         </div>
 
         {tag && <span className="event-tag">{tag}</span>}
+        {id && (
+          <button className="details-button" onClick={handleViewDetails} style={{marginTop:12}}>
+            View Details
+          </button>
+        )}
       </div>
     </div>
   );

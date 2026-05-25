@@ -31,7 +31,6 @@ function Login() {
     return () => clearInterval(interval);
   }, [images.length]);
 
- HEAD
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
@@ -96,7 +95,6 @@ function Login() {
     },
     onError: (error) => console.log("Login Failed:", error),
   });
-ad032d66962f4ca0a93a00ddc18786e074d9a46b
 
   return (
     <main

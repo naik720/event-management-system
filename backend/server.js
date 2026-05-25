@@ -1,11 +1,22 @@
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-require("dotenv").config();
-const { OAuth2Client } = require('google-auth-library');
-
+const express = require('express');
 const app = express();
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 
+dotenv.config();
+connectDB();
+
+app.use(express.json());
+
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+
+// ...existing code...
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
 app.use(cors());
 app.use(express.json());
 
@@ -45,19 +56,6 @@ app.get("/api/images", (req, res) => {
   res.json(images);
 });
 
-/* =========================
-   Events API (Reading from Database!)
-========================= */
-app.get("/api/events", async (req, res) => {
-  try {
-    const allEvents = await Event.find(); // 
-    res.json(allEvents);
-  } catch (err) {
-    res.status(500).json({ error: "Could not fetch events from database" });
-  }
-});
-
-HEAD
 const events = [
   {
     id: 1,
@@ -245,6 +243,7 @@ app.get("/api/bookings", (req, res) => {
   });
 
   res.json(filteredBookings);
+});
 
 // Extra endpoint to seed or create an event manually from your frontend/Postman
 app.post("/api/events", async (req, res) => {
@@ -293,7 +292,6 @@ app.post('/api/auth/google', async (req, res) => {
     console.error("Internal verification error:", error);
     res.status(500).json({ success: false, error: "Authentication pipeline failed" });
   }
-ad032d66962f4ca0a93a00ddc18786e074d9a46b
 });
 
 /* =========================
