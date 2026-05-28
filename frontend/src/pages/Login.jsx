@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 
 function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Checks if the user was kicked here from the event management dashboard
+  const fromEventManagement = searchParams.get("from") === "event-management";
 
   const images = useMemo(
     () => [
@@ -17,17 +21,13 @@ function Login() {
   );
 
   const [currentImage, setCurrentImage] = useState(0);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
     }, 5000);
-
     return () => clearInterval(interval);
   }, [images.length]);
 
@@ -36,61 +36,75 @@ function Login() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+        }),
+      });
 
-    if (!savedUser) {
-      setError("Please create an account before login.");
-      return;
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // 🚀 Redirect securely to the correct dashboard routes
+        setTimeout(() => {
+          if (fromEventManagement) {
+            // Updated to point to your actual event management path!
+            navigate("/user/event-management");
+          } else {
+            navigate("/user/dashboard");
+          }
+        }, 100);
+      } else {
+        setError(data.message || "Login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Failed to connect to server.");
     }
-
-    const isEmailMatch = savedUser.email === formData.email.trim().toLowerCase();
-    const isPasswordMatch = savedUser.password === formData.password;
-
-    if (!isEmailMatch || !isPasswordMatch) {
-      setError("Email or password is incorrect.");
-      return;
-    }
-
-    localStorage.setItem("loggedInUser", JSON.stringify(savedUser));
-    navigate("/user/dashboard");
   };
 
-  // Hook to handle the native Google popup authentication flow
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log("Google Token Received:", tokenResponse);
-
       try {
-        // Send the access token to your Node.js backend on port 5000
         const response = await fetch("http://localhost:5000/api/auth/google", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: tokenResponse.access_token }),
         });
 
         const data = await response.json();
 
         if (data.success) {
-          console.log("Login successful! User data:", data.user);
-
-          // Save user data in localStorage for session handling
           localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+          if (data.token) localStorage.setItem("token", data.token);
 
-          alert(`Welcome, ${data.user.name}!`);
-
-          // Redirect the authenticated user to the home page
-          navigate("/home");
+          // 🚀 Redirect securely to the correct dashboard routes (Google Login)
+          setTimeout(() => {
+            if (fromEventManagement) {
+              // Updated to point to your actual event management path!
+              navigate("/user/event-management");
+            } else {
+              navigate("/user/dashboard");
+            }
+          }, 100);
         } else {
           alert("Authentication failed: " + data.message);
         }
       } catch (error) {
-        console.error("Error connecting to backend authentication server:", error);
-        alert("Failed to reach server. Please check if your backend is running.");
+        console.error("Error connecting to backend auth server:", error);
       }
     },
     onError: (error) => console.log("Login Failed:", error),
@@ -114,17 +128,13 @@ function Login() {
             <span className="text-blue-400">THAT INSPIRE</span>
           </h1>
           <p className="mt-6 text-xl text-gray-200 max-w-lg">
-            Discover, book, and experience extraordinary events around the you.
+            Discover, book, and experience extraordinary events around you.
           </p>
         </div>
 
         <div className="w-full max-w-md bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[35px] p-10 shadow-2xl">
-          <h2 className="text-4xl font-bold text-white mb-3 text-center">
-            Welcome Back
-          </h2>
-          <p className="text-gray-200 mb-8 text-center">
-            Login to continue your journey with us.
-          </p>
+          <h2 className="text-4xl font-bold text-white mb-3 text-center">Welcome Back</h2>
+          <p className="text-gray-200 mb-8 text-center">Login to continue your journey with us.</p>
 
           <form onSubmit={handleSubmit}>
             <label className="text-white block mb-2">Email</label>
@@ -135,14 +145,12 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="w-full p-4 rounded-xl mb-5 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
+              className="w-full p-4 rounded-xl mb-5 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
             />
 
             <div className="flex justify-between mb-2">
               <label className="text-white">Password</label>
-              <span className="text-blue-400 cursor-pointer text-sm hover:underline">
-                Forgot password?
-              </span>
+              <span className="text-blue-400 cursor-pointer text-sm hover:underline">Forgot password?</span>
             </div>
             <input
               name="password"
@@ -151,7 +159,7 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter password"
-              className="w-full p-4 rounded-xl mb-3 outline-none bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:bg-white/30"
+              className="w-full p-4 rounded-xl mb-3 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
             />
 
             {error && (
@@ -160,16 +168,12 @@ function Login() {
               </p>
             )}
 
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 transition-all text-white p-4 rounded-xl font-semibold"
-            >
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-semibold transition-all">
               SIGN IN
             </button>
 
             <div className="text-center text-gray-300 my-5">OR</div>
 
-            {/* Google Authentication Integrated Button */}
             <button
               type="button"
               onClick={() => handleGoogleLogin()}
@@ -185,10 +189,7 @@ function Login() {
 
             <div className="mt-8 text-center text-gray-300">
               Don't have an account?
-              <span
-                onClick={() => navigate("/register")}
-                className="text-blue-400 ml-2 cursor-pointer hover:underline font-semibold"
-              >
+              <span onClick={() => navigate("/register")} className="text-blue-400 ml-2 cursor-pointer hover:underline font-semibold">
                 Create Account
               </span>
             </div>

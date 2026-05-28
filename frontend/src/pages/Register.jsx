@@ -11,32 +11,55 @@ const Register = () => {
     confirmPassword: "",
     role: "Client",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const roles = ["Client"];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
 
-    const userAccount = {
-      username: formData.username.trim(),
-      email: formData.email.trim().toLowerCase(),
-      phone: formData.phone.trim(),
-      password: formData.password,
-      role: formData.role,
-    };
+    setLoading(true);
 
-    localStorage.setItem("registeredUser", JSON.stringify(userAccount));
-    alert("Registration successful. Please login with your email and password.");
-    navigate("/login");
+    try {
+      // Call backend registration API
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.username.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Registration successful. Please login with your email and password.");
+        navigate("/login");
+      } else {
+        setError(data.message || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError("Failed to connect to server. Please check if backend is running.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignInNav = (e) => {
@@ -167,11 +190,18 @@ const Register = () => {
               />
             </div>
 
+            {error && (
+              <p className="text-sm text-red-100 bg-red-500/20 border border-red-300/30 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] transition-all text-white font-semibold text-sm rounded-xl mt-2 tracking-wide uppercase"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] transition-all text-white font-semibold text-sm rounded-xl mt-2 tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? "CREATING ACCOUNT..." : "Create Account"}
             </button>
           </form>
 

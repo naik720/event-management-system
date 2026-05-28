@@ -31,6 +31,7 @@ app.use(express.json());
 // Routes
 // =========================
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/events", require("./routes/events"));
 
 // =========================
 // Event Schema
@@ -69,7 +70,13 @@ const eventSchema = new mongoose.Schema({
   },
 });
 
-const Event = mongoose.model("Event", eventSchema);
+
+let Event;
+if (mongoose.models && mongoose.models.Event) {
+  Event = mongoose.models.Event;
+} else {
+  Event = mongoose.model('Event', eventSchema);
+}
 
 // =========================
 // Google OAuth Client
