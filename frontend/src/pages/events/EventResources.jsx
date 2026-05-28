@@ -21,7 +21,9 @@ function EventResources() {
   });
 
   useEffect(() => {
-    fetchEventDetails();
+    if (eventId) {
+      fetchEventDetails();
+    }
   }, [eventId]);
 
   const fetchEventDetails = async () => {
@@ -85,7 +87,6 @@ function EventResources() {
   const handleContinue = async () => {
     setLoading(true);
     try {
-      // Update event status to next stage
       await eventAPI.updateEvent(eventId, { status: "Scheduled" });
       navigate(`/user/event-dashboard/${eventId}`);
     } catch (err) {
@@ -98,50 +99,56 @@ function EventResources() {
   const totalCost = resources.reduce((sum, r) => sum + (r.cost || 0), 0);
 
   if (!event) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="flex-1 min-h-screen bg-gray-100 flex items-center justify-center text-gray-600 font-medium">
+        Loading event details...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+    <div className="flex-1 min-h-screen bg-gray-100">
+      {/* Top Bar Layout Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            <span className="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
               3
-            </div>
-            <h1 className="text-4xl font-bold text-white">Assign Resources & Staff</h1>
-          </div>
-          <p className="text-gray-300 text-center text-lg">
-            Allocate staff, vendors, equipment, and other resources for {event.title}
+            </span>
+            Assign Resources & Staff
+          </h2>
+          <p className="text-gray-600 text-sm mt-0.5">
+            Allocate staff, vendors, equipment, and assets for <span className="font-semibold text-gray-800">{event.title}</span>
           </p>
         </div>
+      </div>
 
-        {/* Error Message */}
+      <div className="p-8">
+        {/* Error Notification Alert */}
         {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 font-medium text-sm">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Add Resource Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Add Resource Form Box Layout */}
           <div className="lg:col-span-1">
-            <div className="bg-slate-800/50 backdrop-blur p-6 rounded-lg border border-slate-700 sticky top-4">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Plus className="w-5 h-5 text-purple-400" />
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-indigo-600" />
                 Add Resource
               </h3>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Type</label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Type</label>
                   <select
                     value={newResource.resourceType}
                     onChange={(e) =>
                       setNewResource({ ...newResource, resourceType: e.target.value })
                     }
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option>Staff</option>
                     <option>Vendor</option>
@@ -153,7 +160,7 @@ function EventResources() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Name *</label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Name *</label>
                   <input
                     type="text"
                     value={newResource.name}
@@ -161,14 +168,12 @@ function EventResources() {
                       setNewResource({ ...newResource, name: e.target.value })
                     }
                     placeholder="Resource name..."
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Description
-                  </label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Description</label>
                   <textarea
                     value={newResource.description}
                     onChange={(e) =>
@@ -176,15 +181,13 @@ function EventResources() {
                     }
                     placeholder="Details..."
                     rows="2"
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 text-sm"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-gray-300 text-sm font-medium mb-2">
-                      Quantity
-                    </label>
+                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Quantity</label>
                     <input
                       type="number"
                       value={newResource.quantity}
@@ -195,13 +198,11 @@ function EventResources() {
                         })
                       }
                       min="1"
-                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 text-sm font-medium mb-2">
-                      Cost ($)
-                    </label>
+                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Cost ($)</label>
                     <input
                       type="number"
                       value={newResource.cost}
@@ -213,13 +214,13 @@ function EventResources() {
                       }
                       min="0"
                       step="0.01"
-                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Notes</label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Notes</label>
                   <textarea
                     value={newResource.notes}
                     onChange={(e) =>
@@ -227,14 +228,14 @@ function EventResources() {
                     }
                     placeholder="Additional notes..."
                     rows="2"
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 text-sm"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                   />
                 </div>
 
                 <button
                   onClick={handleAddResource}
                   disabled={loading}
-                  className="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition disabled:opacity-50"
+                  className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm"
                 >
                   {loading ? "Adding..." : "Add Resource"}
                 </button>
@@ -242,103 +243,99 @@ function EventResources() {
             </div>
           </div>
 
-          {/* Resources List */}
-          <div className="lg:col-span-2">
-            <div className="space-y-4">
-              <div className="bg-slate-800/50 backdrop-blur p-6 rounded-lg border border-slate-700">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-purple-400" />
-                  Assigned Resources ({resources.length})
-                </h3>
+          {/* Resources Right Column Canvas */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Package className="w-5 h-5 text-indigo-600" />
+                Assigned Resources ({resources.length})
+              </h3>
 
-                {resources.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No resources assigned yet</p>
-                    <p className="text-sm text-gray-500 mt-1">Add resources using the form on the left</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {resources.map((resource) => (
-                      <div
-                        key={resource._id}
-                        className="bg-slate-700/50 p-4 rounded-lg border border-slate-600 hover:border-slate-500 transition"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-white font-semibold">{resource.name}</h4>
-                              <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded border border-purple-500/30">
-                                {resource.resourceType}
-                              </span>
-                            </div>
-                            {resource.description && (
-                              <p className="text-gray-400 text-sm mb-2">{resource.description}</p>
-                            )}
-                            <div className="flex gap-4 text-sm text-gray-400">
-                              <span>Qty: {resource.quantity}</span>
-                              <span>${resource.cost}</span>
-                              <span
-                                className={`px-2 py-0.5 rounded text-xs ${
-                                  resource.status === "Available"
-                                    ? "bg-green-500/20 text-green-300"
-                                    : "bg-yellow-500/20 text-yellow-300"
-                                }`}
-                              >
-                                {resource.status}
-                              </span>
-                            </div>
-                            {resource.notes && (
-                              <p className="text-gray-500 text-xs mt-2 italic">{resource.notes}</p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleDeleteResource(resource._id)}
-                            className="p-2 text-red-400 hover:bg-red-500/20 rounded transition ml-4"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+              {resources.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-medium">No resources assigned yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Add resources using the setup form on the left</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {resources.map((resource) => (
+                    <div
+                      key={resource._id}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition flex justify-between items-start"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <h4 className="text-gray-800 font-bold">{resource.name}</h4>
+                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded border border-indigo-100">
+                            {resource.resourceType}
+                          </span>
                         </div>
+                        {resource.description && (
+                          <p className="text-gray-600 text-sm mb-2">{resource.description}</p>
+                        )}
+                        <div className="flex gap-4 text-xs font-semibold text-gray-500 items-center">
+                          <span>Qty: {resource.quantity}</span>
+                          <span>${resource.cost}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs ${resource.status === "Available"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-amber-100 text-amber-700"
+                              }`}
+                          >
+                            {resource.status}
+                          </span>
+                        </div>
+                        {resource.notes && (
+                          <p className="text-gray-400 text-xs mt-2 italic bg-white p-2 rounded border border-gray-100">
+                            Notes: {resource.notes}
+                          </p>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Cost Summary */}
-              {resources.length > 0 && (
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 p-6 rounded-lg">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-white font-semibold">Total Resource Cost</h4>
-                    <span className="text-2xl font-bold text-purple-400">${totalCost.toFixed(2)}</span>
-                  </div>
-                  <p className="text-gray-300 text-sm">
-                    These are preliminary resource costs. Final costs may vary based on availability and
-                    market conditions.
-                  </p>
+                      <button
+                        onClick={() => handleDeleteResource(resource._id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
+
+            {/* Cost Summary Box Component */}
+            {resources.length > 0 && (
+              <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-lg flex justify-between items-center">
+                <div>
+                  <h4 className="text-gray-800 font-bold">Total Resource Cost</h4>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Preliminary budget breakdown calculated dynamically.
+                  </p>
+                </div>
+                <span className="text-3xl font-black text-indigo-600">${totalCost.toFixed(2)}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between gap-4">
+        {/* Footer Step Controls Navigation Row */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200 mt-8">
           <button
             onClick={() => navigate(`/user/event-details/${eventId}`)}
-            className="px-8 py-3 rounded-lg border border-slate-600 text-white hover:bg-slate-700/50 transition flex items-center gap-2"
+            className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition flex items-center gap-2 text-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
             Back
           </button>
 
           <button
             onClick={handleContinue}
             disabled={loading}
-            className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition disabled:opacity-50 flex items-center gap-2 text-sm shadow-sm"
           >
-            {loading ? "Creating..." : "Complete Setup & View Dashboard"}
-            <ArrowRight className="w-5 h-5" />
+            {loading ? "Processing..." : "Complete Setup & View Dashboard"}
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

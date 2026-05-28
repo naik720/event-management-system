@@ -24,7 +24,10 @@ import EventManagementDashboard from "./pages/events/EventManagementDashboard";
 import EventCategory from "./pages/events/EventCategory";
 import EventDetails from "./pages/events/EventDetails";
 import EventResources from "./pages/events/EventResources";
+import ResourcesPage from "./pages/events/ResourcesPage";
 import EventDashboard from "./pages/events/EventDashboard";
+import EventsPage from "./pages/events/EventsPage";
+import CalendarPage from "./pages/events/CalendarPage"; // Added Calendar Page Import
 
 // Route Guard Components
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
@@ -182,11 +185,18 @@ function App() {
           </UserProtectedRoute>
         }
       >
+        {/* Syncs base view to Dashboard */}
         <Route index element={<Navigate to="dashboard" replace />} />
+
+        {/* Child Pages tied back to individual sidebar links */}
         <Route path="dashboard" element={<EventDashboard />} />
-        <Route path="events" element={<div>Events Component Placeholder</div>} />
-        <Route path="resources" element={<EventResources />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="resources" element={<ResourcesPage />} />
         <Route path="categories" element={<EventCategory />} />
+
+        {/* The missing nested route link */}
+        <Route path="calendar" element={<CalendarPage />} />
+
         <Route path="analytics" element={<Payments />} />
       </Route>
 
