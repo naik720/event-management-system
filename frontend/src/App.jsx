@@ -27,7 +27,16 @@ import EventResources from "./pages/events/EventResources";
 import ResourcesPage from "./pages/events/ResourcesPage";
 import EventDashboard from "./pages/events/EventDashboard";
 import EventsPage from "./pages/events/EventsPage";
-import CalendarPage from "./pages/events/CalendarPage"; // Added Calendar Page Import
+import CalendarPage from "./pages/events/CalendarPage";
+
+// Venue Management Pages (NEW IMPORTS)
+import VenueDashboard from "./venue-management/pages/VenueDashboard";
+import AddVenue from "./venue-management/pages/AddVenue";
+import AllVenues from "./venue-management/pages/AllVenues";
+import MaintenanceRecords from "./venue-management/pages/MaintenanceRecords";
+import SeatingArrangements from "./venue-management/pages/SeatingArrangements";
+import VenueBookings from "./venue-management/pages/VenueBookings";
+import VenueDetails from "./venue-management/pages/VenueDetails";
 
 // Route Guard Components
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
@@ -39,8 +48,8 @@ function UserProtectedRoute({ children }) {
   const location = useLocation();
 
   if (!loggedInUser || !token) {
-    if (location.pathname.startsWith("/user/event-management")) {
-      return <Navigate to="/login?from=event-management" replace />;
+    if (location.pathname.startsWith("/user/event-management") || location.pathname.startsWith("/venue")) {
+      return <Navigate to="/login?from=venue-management" replace />;
     }
     return <Navigate to="/login" replace />;
   }
@@ -185,20 +194,72 @@ function App() {
           </UserProtectedRoute>
         }
       >
-        {/* Syncs base view to Dashboard */}
         <Route index element={<Navigate to="dashboard" replace />} />
-
-        {/* Child Pages tied back to individual sidebar links */}
         <Route path="dashboard" element={<EventDashboard />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="categories" element={<EventCategory />} />
-
-        {/* The missing nested route link */}
         <Route path="calendar" element={<CalendarPage />} />
-
         <Route path="analytics" element={<Payments />} />
       </Route>
+
+      {/* --- Venue Management System Routes (NEW SECTION) --- */}
+      <Route
+        path="/venue/dashboard"
+        element={
+          <UserProtectedRoute>
+            <VenueDashboard />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/all"
+        element={
+          <UserProtectedRoute>
+            <AllVenues />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/add"
+        element={
+          <UserProtectedRoute>
+            <AddVenue />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/bookings"
+        element={
+          <UserProtectedRoute>
+            <VenueBookings />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/maintenance"
+        element={
+          <UserProtectedRoute>
+            <MaintenanceRecords />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/seating"
+        element={
+          <UserProtectedRoute>
+            <SeatingArrangements />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/venue/details/:id"
+        element={
+          <UserProtectedRoute>
+            <VenueDetails />
+          </UserProtectedRoute>
+        }
+      />
 
       {/* --- Admin Panel Routes --- */}
       <Route path="/admin-login" element={<AdminLogin />} />
