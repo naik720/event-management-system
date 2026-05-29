@@ -6,7 +6,7 @@ const EventCard = ({ id, image, title, date, location, compact = false, tag }) =
   const navigate = useNavigate();
   const handleViewDetails = (e) => {
     e.stopPropagation();
-    if (id) navigate(`/user/event/${id}`);
+    if (id) navigate(`/client/event/${id}`);
   };
   return (
     <div className={compact ? "event-card event-card-compact" : "event-card"}>

@@ -125,7 +125,7 @@ const Register = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-300">User name</label>
+              <label className="text-xs font-medium text-slate-300">Client name</label>
               <input
                 name="username"
                 type="text"

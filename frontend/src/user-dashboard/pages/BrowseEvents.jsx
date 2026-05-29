@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
+import {
+  getClientDisplayName,
+  getClientInitial,
+  getCurrentClient,
+} from "../services/clientSession";
 import { getEvents } from "../services/userApi";
 import "../styles/dashboard.css";
 
@@ -127,6 +132,9 @@ const eventTypeFilters = [
 ];
 
 const BrowseEvents = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+  const clientInitial = getClientInitial(currentClient);
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("All Categories");
@@ -176,15 +184,15 @@ const BrowseEvents = () => {
         <header className="browse-topbar">
           <div>
             <h1>Browse Events</h1>
-            <p>Dashboard &gt; Browse Events</p>
+            <p>Client Dashboard &gt; Browse Events</p>
           </div>
 
           <div className="profile-box">
             <div>
-              <h4>john.doe@gmail.com</h4>
-              <p>Welcome back, John!</p>
+              <h4>{currentClient.email || "client@example.com"}</h4>
+              <p>Welcome back, {clientName}!</p>
             </div>
-            <div className="avatar">J</div>
+            <div className="avatar">{clientInitial}</div>
           </div>
         </header>
 

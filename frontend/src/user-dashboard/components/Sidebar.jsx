@@ -10,20 +10,25 @@ import {
   Ticket,
   User,
   WalletCards,
-  X,
+  Bell,
+  MessageSquare,
+  FilePlus,
 } from "lucide-react";
 
 import "../styles/dashboard.css";
 
 const menuItems = [
-  { label: "Dashboard", icon: Home, path: "/user/dashboard" },
-  { label: "Browse Events", icon: CalendarDays, path: "/user/browse-events" },
-  { label: "My Bookings", icon: Ticket, path: "/user/my-bookings" },
-  { label: "Wishlist", icon: Heart, path: "/user/wishlist" },
-  { label: "Payments", icon: WalletCards, path: "/user/payments" },
-  { label: "Profile", icon: User, path: "/user/profile" },
-  { label: "Settings", icon: Settings, path: "/user/settings" },
-  { label: "Help & Support", icon: CircleHelp, path: "/user/help-support" },
+  { label: "Client Dashboard", icon: Home, path: "/client/dashboard" },
+  { label: "Browse Events", icon: CalendarDays, path: "/client/browse-events" },
+  { label: "My Bookings", icon: Ticket, path: "/client/my-bookings" },
+  { label: "Wishlist", icon: Heart, path: "/client/wishlist" },
+  { label: "Payments", icon: WalletCards, path: "/client/payments" },
+  { label: "Notification", icon: Bell, path: "/client/notification" },
+  { label: "Feedback", icon: MessageSquare, path: "/client/feedback" },
+  { label: "Event Request", icon: FilePlus, path: "/client/event-request" },
+  { label: "Profile", icon: User, path: "/client/profile" },
+  { label: "Settings", icon: Settings, path: "/client/settings" },
+  { label: "Help & Support", icon: CircleHelp, path: "/client/help-support" },
 ];
 
 const Sidebar = () => {
@@ -41,11 +46,11 @@ const Sidebar = () => {
         <div className="logo-section">
           <div>
             <h2>EMS</h2>
-            <p>Event Management</p>
+            <p>Client Module</p>
           </div>
 
-          <button type="button" aria-label="Close sidebar">
-            <X size={18} />
+          <button type="button" aria-label="Close sidebar" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <span style={{ fontSize: 18, fontWeight: 'bold' }}>×</span>
           </button>
         </div>
 

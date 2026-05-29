@@ -1,5 +1,10 @@
 import React from "react";
-import { CalendarDays, Heart, Ticket, WalletCards } from "lucide-react";
+import {
+  Bell,
+  MessageSquare,
+  Ticket,
+  WalletCards,
+} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -7,6 +12,7 @@ import StatsCard from "../components/StatsCard";
 import EventCard from "../components/EventCard";
 import QuickActions from "../components/QuickActions";
 import BookingCard from "../components/BookingCard";
+import { getClientDisplayName, getCurrentClient } from "../services/clientSession";
 
 import "../styles/dashboard.css";
 
@@ -72,6 +78,9 @@ const SectionHeader = ({ title }) => (
 );
 
 const Dashboard = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -81,15 +90,15 @@ const Dashboard = () => {
 
         <section className="summary-panel">
           <div className="welcome-box">
-            <h2>Welcome back, John!</h2>
-            <p>Discover and manage your events easily.</p>
+            <h2>Welcome back, {clientName}!</h2>
+            <p>Manage your client profile, event requests, bookings, payments, notifications, and feedback.</p>
           </div>
 
           <div className="stats-grid">
-            <StatsCard icon={CalendarDays} number="12" title="Events Attended" tone="orange" />
-            <StatsCard icon={Ticket} number="4" title="Upcoming Events" tone="blue" />
-            <StatsCard icon={Heart} number="3" title="Saved Events" tone="red" />
-            <StatsCard icon={WalletCards} number="$320" title="Total Spent" tone="green" />
+            <StatsCard icon={Ticket} number="04" title="Booked Events" tone="orange" />
+            <StatsCard icon={WalletCards} number="$320" title="Payment History" tone="green" />
+            <StatsCard icon={Bell} number="06" title="Event Notifications" tone="blue" />
+            <StatsCard icon={MessageSquare} number="02" title="Feedback Status" tone="red" />
           </div>
         </section>
 

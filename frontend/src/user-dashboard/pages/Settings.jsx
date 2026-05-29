@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
+import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 
 const settingsMenu = [
@@ -34,14 +35,6 @@ const settingsMenu = [
   { label: "Email Preferences", icon: Mail },
   { label: "Appearance", icon: Palette },
   { label: "Language & Region", icon: Globe2 },
-];
-
-const personalInfo = [
-  { label: "Full Name", value: "John Doe", icon: User },
-  { label: "Email Address", value: "john.doe@gmail.com", icon: Mail },
-  { label: "Phone Number", value: "+1 987 654 3210", icon: Phone },
-  { label: "Date of Birth", value: "15 May 1990", icon: CalendarDays },
-  { label: "Address", value: "123 Main Street, New York, NY 10001, USA", icon: MapPin, wide: true },
 ];
 
 const notificationOptions = [
@@ -78,6 +71,17 @@ const preferences = [
 ];
 
 const Settings = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+  const firstName = clientName.split(" ")[0] || "Client";
+  const clientPhoto = getClientPhoto(currentClient);
+  const personalInfo = [
+    { label: "Full Name", value: clientName, icon: User },
+    { label: "Email Address", value: currentClient.email || "client@example.com", icon: Mail },
+    { label: "Phone Number", value: currentClient.phone || "Not added", icon: Phone },
+    { label: "Date of Birth", value: currentClient.dateOfBirth || "Not added", icon: CalendarDays },
+    { label: "Address", value: currentClient.address || "Not added", icon: MapPin, wide: true },
+  ];
   const [activeMenu, setActiveMenu] = useState("Account Settings");
   const [notifications, setNotifications] = useState(notificationOptions);
 
@@ -116,12 +120,12 @@ const Settings = () => {
             </button>
             <div className="profile-mini-user">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                alt="John Doe"
+                src={clientPhoto}
+                alt={clientName}
               />
               <div>
                 <p>Welcome back,</p>
-                <strong>John!</strong>
+                <strong>{firstName}!</strong>
               </div>
               <ChevronDown size={16} />
             </div>
@@ -130,7 +134,7 @@ const Settings = () => {
 
         <section className="settings-title">
           <h1>Settings</h1>
-          <p>Dashboard &gt; Settings</p>
+          <p>Client Dashboard &gt; Settings</p>
         </section>
 
         <div className="settings-layout">

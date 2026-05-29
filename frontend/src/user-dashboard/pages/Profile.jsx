@@ -27,6 +27,11 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
+import {
+  CLIENT_PROFILE_PHOTO_KEY,
+  DEFAULT_CLIENT_PHOTO,
+  getClientPhoto,
+} from "../services/clientSession";
 import "../styles/dashboard.css";
 
 const profileStats = [
@@ -39,22 +44,26 @@ const profileStats = [
 ];
 
 const defaultProfile = {
-  username: "John Doe",
-  email: "john.doe@gmail.com",
-  phone: "+1 987 654 3210",
-  dateOfBirth: "15 May 1990",
-  address: "123 Main Street, New York, NY 10001, USA",
-  city: "New York",
-  state: "New York",
-  zipCode: "10001",
-  photo:
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+  username: "Client",
+  email: "client@example.com",
+  phone: "",
+  dateOfBirth: "",
+  address: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  photo: DEFAULT_CLIENT_PHOTO,
 };
 
 const getSavedProfile = () => {
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
   const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
-  return { ...defaultProfile, ...registeredUser, ...loggedInUser };
+  const savedProfile = { ...defaultProfile, ...registeredUser, ...loggedInUser };
+
+  return {
+    ...savedProfile,
+    photo: getClientPhoto(savedProfile),
+  };
 };
 
 const profileFields = [
@@ -83,14 +92,33 @@ const tabs = [
   "Notification Preferences",
 ];
 
+const resizeProfilePhoto = (photoDataUrl, onComplete) => {
+  const image = new Image();
+
+  image.onload = () => {
+    const maxSize = 480;
+    const scale = Math.min(maxSize / image.width, maxSize / image.height, 1);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(image.width * scale);
+    canvas.height = Math.round(image.height * scale);
+
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    onComplete(canvas.toDataURL("image/jpeg", 0.82));
+  };
+
+  image.onerror = () => onComplete(photoDataUrl);
+  image.src = photoDataUrl;
+};
+
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState(getSavedProfile);
   const [message, setMessage] = useState("");
 
-  const displayName = profile.username || profile.name || "John Doe";
-  const firstName = displayName.split(" ")[0] || "John";
+  const displayName = profile.username || profile.name || "Client";
+  const firstName = displayName.split(" ")[0] || "Client";
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
@@ -105,10 +133,15 @@ const Profile = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setProfile((currentProfile) => ({ ...currentProfile, photo: reader.result }));
-      setMessage("Photo selected. Click Update Profile to save it.");
+      const selectedPhoto = String(reader.result || "");
+
+      resizeProfilePhoto(selectedPhoto, (resizedPhoto) => {
+        setProfile((currentProfile) => ({ ...currentProfile, photo: resizedPhoto }));
+        setMessage("Photo selected. Click Update Profile to save it.");
+      });
     };
     reader.readAsDataURL(file);
+    event.target.value = "";
   };
 
   const saveProfile = () => {
@@ -121,19 +154,27 @@ const Profile = () => {
     const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
 
-    if (registeredUser) {
-      localStorage.setItem(
-        "registeredUser",
-        JSON.stringify({ ...registeredUser, ...updatedProfile })
-      );
-    }
+    try {
+      if (updatedProfile.photo) {
+        localStorage.setItem(CLIENT_PROFILE_PHOTO_KEY, updatedProfile.photo);
+      }
 
-    localStorage.setItem(
-      "loggedInUser",
-      JSON.stringify({ ...registeredUser, ...loggedInUser, ...updatedProfile })
-    );
-    setProfile(updatedProfile);
-    setMessage("Profile updated successfully.");
+      if (registeredUser) {
+        localStorage.setItem(
+          "registeredUser",
+          JSON.stringify({ ...registeredUser, ...updatedProfile })
+        );
+      }
+
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify({ ...registeredUser, ...loggedInUser, ...updatedProfile })
+      );
+      setProfile(updatedProfile);
+      setMessage("Profile updated successfully.");
+    } catch {
+      setMessage("Profile photo is too large. Please choose a smaller image.");
+    }
   };
 
   return (
@@ -178,7 +219,7 @@ const Profile = () => {
         <section className="profile-title-bar">
           <div>
             <h1>My Profile</h1>
-            <p>Dashboard &gt; Profile</p>
+            <p>Client Dashboard &gt; Profile</p>
           </div>
           <button type="button" className="profile-edit-button" onClick={saveProfile}>
             <Edit3 size={16} />
@@ -294,7 +335,7 @@ const Profile = () => {
             <section className="profile-panel">
               <h2>Quick Actions</h2>
               <div className="profile-actions">
-                <button type="button" onClick={() => navigate("/user/change-password")}>
+                <button type="button" onClick={() => navigate("/client/change-password")}>
                   <Lock size={16} />
                   Change Password
                 </button>

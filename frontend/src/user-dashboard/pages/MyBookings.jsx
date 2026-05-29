@@ -18,6 +18,7 @@ import {
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import Sidebar from "../components/Sidebar";
+import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import { getBookings } from "../services/userApi";
 import "../styles/dashboard.css";
 
@@ -91,6 +92,9 @@ const bookingStatusColors = {
 };
 
 const MyBookings = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+  const clientPhoto = getClientPhoto(currentClient);
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("All Bookings");
   const [searchTerm, setSearchTerm] = useState("");
@@ -184,11 +188,11 @@ const MyBookings = () => {
             </button>
             <div className="booking-user">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                alt="John Doe"
+                src={clientPhoto}
+                alt={clientName}
               />
               <div>
-                <strong>John Doe</strong>
+                <strong>{clientName}</strong>
                 <p>Client</p>
               </div>
             </div>

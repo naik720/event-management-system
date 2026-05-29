@@ -6,25 +6,14 @@ import EventManagementSidebar from "./EventManagementSidebar";
 function CalendarPage() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [userData, setUserData] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 28)); // May 28, 2026
   const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
-
     if (!token) {
       navigate("/login?from=event-management");
       return;
-    }
-
-    if (user) {
-      try {
-        setUserData(JSON.parse(user));
-      } catch (e) {
-        console.error("Error parsing user data", e);
-      }
     }
 
     fetchUserEvents();

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
+import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 
 const contactCards = [
@@ -126,6 +127,11 @@ const resources = [
 ];
 
 const HelpSupport = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+  const firstName = clientName.split(" ")[0] || "Client";
+  const clientPhoto = getClientPhoto(currentClient);
+
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -153,12 +159,12 @@ const HelpSupport = () => {
             </button>
             <div className="profile-mini-user">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                alt="John Doe"
+                src={clientPhoto}
+                alt={clientName}
               />
               <div>
                 <p>Welcome back,</p>
-                <strong>John!</strong>
+                <strong>{firstName}!</strong>
               </div>
               <ChevronDown size={16} />
             </div>
@@ -167,7 +173,7 @@ const HelpSupport = () => {
 
         <section className="support-title">
           <h1>Help & Support</h1>
-          <p>Dashboard &gt; Help & Support</p>
+          <p>Client Dashboard &gt; Help & Support</p>
         </section>
 
         <section className="support-hero">

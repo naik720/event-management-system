@@ -14,6 +14,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import Sidebar from "../components/Sidebar";
 import WishlistEventCard from "../components/WishlistEventCard";
+import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 
 const savedEvents = [
@@ -111,6 +112,9 @@ const priceAlerts = [
 ];
 
 const Wishlist = () => {
+  const currentClient = getCurrentClient();
+  const clientName = getClientDisplayName(currentClient);
+  const clientPhoto = getClientPhoto(currentClient);
   const [events, setEvents] = useState(savedEvents);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recent");
@@ -201,11 +205,11 @@ const Wishlist = () => {
             </button>
             <div className="booking-user">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                alt="John Doe"
+                src={clientPhoto}
+                alt={clientName}
               />
               <div>
-                <strong>John Doe</strong>
+                <strong>{clientName}</strong>
                 <p>Client</p>
               </div>
             </div>

@@ -37,8 +37,8 @@ const ChangePassword = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const displayName = currentUser.username || currentUser.name || "John Doe";
-  const firstName = displayName.split(" ")[0] || "John";
+  const displayName = currentUser.username || currentUser.name || "Client";
+  const firstName = displayName.split(" ")[0] || "Client";
   const profilePhoto =
     currentUser.photo ||
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80";
@@ -172,9 +172,9 @@ const ChangePassword = () => {
         <section className="profile-title-bar">
           <div>
             <h1>Change Password</h1>
-            <p>Dashboard &gt; Profile &gt; Change Password</p>
+            <p>Client Dashboard &gt; Profile &gt; Change Password</p>
           </div>
-          <button type="button" className="profile-edit-button" onClick={() => navigate("/user/profile")}>
+          <button type="button" className="profile-edit-button" onClick={() => navigate("/client/profile")}>
             Back to Profile
           </button>
         </section>

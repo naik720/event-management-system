@@ -17,23 +17,13 @@ function ResourcesPage() {
   const [filteredResources, setFilteredResources] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [resourceType, setResourceType] = useState("all");
-  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
 
     if (!token) {
       navigate("/login?from=event-management");
       return;
-    }
-
-    if (user) {
-      try {
-        setUserData(JSON.parse(user));
-      } catch (e) {
-        console.error("Error parsing user data", e);
-      }
     }
 
     fetchResources();
