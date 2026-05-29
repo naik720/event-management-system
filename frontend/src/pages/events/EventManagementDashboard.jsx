@@ -106,8 +106,8 @@ function EventManagementDashboard() {
             { path: "dashboard", label: "Dashboard", icon: "📊" },
             { path: "events", label: "Events", icon: "📅" },
             { path: "resources", label: "Resources", icon: "👥" },
-            { path: "categories", label: "Categories", icon: "📆" },
-            { path: "analytics", label: "Analytics", icon: "📈" },
+            { path: "categories", label: "Categories", icon: "🏷️" },
+            { path: "calendar", label: "Calendar", icon: "📅" },
           ].map((item) => (
             <NavLink
               key={item.path}
@@ -309,12 +309,12 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
                   <td className="py-4 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${event.status === "Planning"
-                          ? "bg-orange-100 text-orange-700"
-                          : event.status === "Scheduled"
-                            ? "bg-blue-100 text-blue-700"
-                            : event.status === "Ongoing"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-700"
+                        ? "bg-orange-100 text-orange-700"
+                        : event.status === "Scheduled"
+                          ? "bg-blue-100 text-blue-700"
+                          : event.status === "Ongoing"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                     >
                       {event.status}
