@@ -26,6 +26,7 @@ import {
   Clock,
   AlertCircle,
   Settings,
+  RssIcon,
 } from "lucide-react";
 
 function AdminDashboard() {
@@ -51,7 +52,7 @@ function AdminDashboard() {
   const dashboardStats = {
     totalEvents: 1482,
     upcomingEvents: 156,
-    revenueThisMonth: "$2.48M",
+    revenueThisMonth: "2.48M",
     revenueGrowth: "+24.5%",
     staffAvailability: [
       { role: "Field Technicians", available: 84, total: 90 },
@@ -92,9 +93,8 @@ function AdminDashboard() {
     <div className="flex h-screen bg-gray-100">
       {/* SIDEBAR */}
       <div
-        className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col`}
+        className={`${sidebarOpen ? "w-64" : "w-20"
+          } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col`}
       >
         {/* Logo Section */}
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
@@ -127,11 +127,10 @@ function AdminDashboard() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === item.id
-                  ? "bg-amber-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id
+                ? "bg-amber-600 text-white"
+                : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
             >
               <item.icon size={20} />
               {sidebarOpen && <span>{item.label}</span>}
@@ -378,7 +377,7 @@ function AdminDashboard() {
                 <div className="space-y-4">
                   {[
                     {
-                      action: "Sarah Jenkins approved vendor contract",
+                      action: "Santhosh approved vendor contract",
                       event: "Summer Fest",
                       time: "2 minutes ago",
                     },
@@ -389,7 +388,7 @@ function AdminDashboard() {
                     },
                     {
                       action: "Inventory Alert: Audio-visual stock low",
-                      event: "Chicago site",
+                      event: "Mangalore Fest",
                       time: "2 hours ago",
                     },
                     {
@@ -478,11 +477,10 @@ function AdminDashboard() {
                         <td className="px-6 py-4 text-gray-600">{event.venue}</td>
                         <td className="px-6 py-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              event.status === "Confirmed"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${event.status === "Confirmed"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                              }`}
                           >
                             {event.status}
                           </span>
@@ -599,12 +597,12 @@ function AdminDashboard() {
                     {[
                       {
                         invoice: "INV-001",
-                        amount: "$5,000",
+                        amount: "RS.5,000",
                         status: "Pending",
                       },
                       {
                         invoice: "INV-002",
-                        amount: "$8,500",
+                        amount: "RS.8,500",
                         status: "Paid",
                       },
                     ].map((payment, idx) => (
@@ -620,11 +618,10 @@ function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              payment.status === "Paid"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${payment.status === "Paid"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                              }`}
                           >
                             {payment.status}
                           </span>
