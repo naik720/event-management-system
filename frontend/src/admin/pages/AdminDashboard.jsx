@@ -27,6 +27,10 @@ import {
   Store,
   ChevronDown,
   ChevronRight,
+  TrendingUp,
+  Settings,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import VenueDashboard from "../venue-management/pages/VenueDashboard";
 import AddVenue from "../venue-management/pages/AddVenue";
@@ -109,21 +113,134 @@ function AdminDashboard() {
     { key: "overview", label: "Overview" },
     { key: "add-venue", label: "Add Venue" },
     { key: "all-venues", label: "All Venues" },
-    { key: "venue-bookings", label: "Booking Requests" },
+    { key: "venue-bookings", label: "Venue Bookings" },
     { key: "availability-calendar", label: "Availability Calendar" },
-    { key: "seating-layout", label: "Seating Layout" },
-    { key: "maintenance", label: "Maintenance" },
+    { key: "seating-layout", label: "Seating Arrangements" },
+    { key: "maintenance", label: "Maintenance Records" },
     { key: "venue-revenue", label: "Venue Revenue" },
   ];
 
+  const [events, setEvents] = useState([
+    { id: 1, name: "Tech Summit 2026", date: "2026-06-15", venue: "Convention Center", status: "Confirmed" },
+    { id: 2, name: "Annual Gala", date: "2026-07-20", venue: "Grand Ballroom", status: "Planning" },
+    { id: 3, name: "Wedding Ceremony", date: "2026-08-10", venue: "Garden Estate", status: "Confirmed" },
+  ]);
+
+  const [clients] = useState([
+    { name: "Tech Corp", events: 5, status: "Active" },
+    { name: "Fashion Inc", events: 3, status: "Active" },
+    { name: "Local NGO", events: 1, status: "Inactive" },
+  ]);
+
+  const [payments, setPayments] = useState([
+    { id: "INV-001", amount: "RS.5,000", status: "Pending" },
+    { id: "INV-002", amount: "RS.8,500", status: "Paid" },
+  ]);
+
+  const [bookings, setBookings] = useState([
+    { id: "BK-9041", client: "TechCorp Labs", eventName: "Annual Tech Summit 2026", date: "2026-06-15", amount: "RS.45,000", status: "Confirmed" },
+    { id: "BK-9042", client: "Sarah Jenkins", eventName: "Wedding Reception Panel", date: "2026-06-22", amount: "RS.28,000", status: "Pending" },
+    { id: "BK-9043", client: "Alpha Media Hub", eventName: "Product Launch Expo", date: "2026-07-05", amount: "RS.62,000", status: "Confirmed" },
+    { id: "BK-9044", client: "David Miller", eventName: "Charity Gala Dinner", date: "2026-07-12", amount: "RS.31,000", status: "Cancelled" },
+    { id: "BK-9045", client: "FinTech Global", eventName: "Executive Retreat", date: "2026-07-19", amount: "RS.50,000", status: "Pending" },
+  ]);
+
+  const [recentActivities, setRecentActivities] = useState([
+    { action: "Santhosh approved vendor contract", event: "Summer Fest", time: "Just now" },
+    { action: "Payment received from Vortex Media", event: "Q2 services", time: "45 minutes ago" },
+    { action: "Inventory Alert: Audio-visual stock low", event: "Mangalore Fest", time: "2 hours ago" },
+  ]);
+
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [newEvent, setNewEvent] = useState({ name: "", date: "", venue: "", status: "Planning" });
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [clientFilter, setClientFilter] = useState("All");
+  const [bookingFilter, setBookingFilter] = useState("All");
+  const [reportDownloading, setReportDownloading] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    twoFactor: false,
+    systemMaintenance: false,
+  });
+
+  useEffect(() => {
+    if (activeTab === "bookings") {
+      setBookingLoading(true);
+      const timer = setTimeout(() => setBookingLoading(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
+
+  const logActivity = (action, eventDetail) => {
+    setRecentActivities((current) => [{ action, event: eventDetail, time: "Just now" }, ...current]);
+  };
+
+  const handleSaveEvent = (e) => {
+    e.preventDefault();
+    if (editingEvent) {
+      setEvents((current) => current.map((ev) => (ev.id === editingEvent.id ? { ...editingEvent } : ev)));
+      logActivity(`Updated event "${editingEvent.name}"`, editingEvent.venue);
+      setEditingEvent(null);
+    } else {
+      const created = { ...newEvent, id: Date.now() };
+      setEvents((current) => [...current, created]);
+      logActivity(`Created new event "${created.name}"`, created.venue);
+      setNewEvent({ name: "", date: "", venue: "", status: "Planning" });
+    }
+    setIsEventModalOpen(false);
+  };
+
+  const handleEditClick = (event) => {
+    setEditingEvent(event);
+    setIsEventModalOpen(true);
+  };
+
+  const runAutoAudit = () => {
+    setAuditLoading(true);
+    setTimeout(() => {
+      setAuditLoading(false);
+      alert("System Audit completed! Remaining pending client records processed and synchronized successfully.");
+      logActivity("Executed automated system infrastructure audit", "Vendor Logistics Management");
+    }, 2000);
+  };
+
+  const togglePaymentStatus = (id) => {
+    setPayments((current) => current.map((p) => (p.id === id ? { ...p, status: p.status === "Paid" ? "Pending" : "Paid" } : p)));
+    logActivity(`Changed status of invoice ${id}`, "Payment Processing");
+  };
+
+  const handleBookingStatusChange = (id, newStatus) => {
+    setBookings((current) => current.map((b) => (b.id === id ? { ...b, status: newStatus } : b)));
+    logActivity(`Mutated Transaction State of ${id} to ${newStatus}`, "Ingestion Buffer Framework");
+  };
+
+  const generateReport = (reportName) => {
+    setReportDownloading(reportName);
+    setTimeout(() => {
+      setReportDownloading(null);
+      const dataString = `Report,GeneratedAt,Status\n${reportName},${new Date().toISOString()},Success`;
+      const blob = new Blob([dataString], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.setAttribute("href", url);
+      a.setAttribute("download", `${reportName.toLowerCase().replace(/\s+/g, "_")}_export.csv`);
+      a.click();
+      logActivity(`Generated and exported analytical document: ${reportName}`, "Data Exports");
+    }, 1500);
+  };
+
+  const filteredBookings = bookings.filter((b) => (bookingFilter === "All" ? true : b.status === bookingFilter));
+
   const routeTitles = {
-    "/admin/venue-management/overview": "Venue Dashboard",
+    "/admin/venue-management/overview": "Overview",
     "/admin/venue-management/add-venue": "Add Venue",
     "/admin/venue-management/all-venues": "All Venues",
-    "/admin/venue-management/venue-bookings": "Booking Requests",
+    "/admin/venue-management/venue-bookings": "Venue Bookings",
     "/admin/venue-management/availability-calendar": "Availability Calendar",
-    "/admin/venue-management/seating-layout": "Seating Layout",
-    "/admin/venue-management/maintenance": "Maintenance",
+    "/admin/venue-management/seating-layout": "Seating Arrangements",
+    "/admin/venue-management/maintenance": "Maintenance Records",
     "/admin/venue-management/venue-revenue": "Venue Revenue",
   };
 
@@ -135,6 +252,14 @@ function AdminDashboard() {
     ? "Manage Clients"
     : activeTab === "staff"
     ? "Staff & Vendors Management"
+    : activeTab === "bookings"
+    ? "Bookings Dashboard"
+    : activeTab === "payments"
+    ? "Payment Ledger"
+    : activeTab === "reports"
+    ? "Reports"
+    : activeTab === "settings"
+    ? "System Settings"
     : "Dashboard Overview";
 
   return (
@@ -142,7 +267,7 @@ function AdminDashboard() {
       <div
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col`}
+        } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col overflow-hidden`}
       >
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           {sidebarOpen && (
@@ -159,31 +284,34 @@ function AdminDashboard() {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {[
-            { id: "overview", label: "Dashboard", icon: Calendar },
-            { id: "events", label: "Manage Events", icon: Calendar },
-            { id: "clients", label: "Manage Clients", icon: Users },
-            { id: "staff", label: "Staff & Vendors", icon: Users },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                navigate("/admin/dashboard");
-              }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
-                  ? "bg-amber-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              <item.icon size={20} />
-              {sidebarOpen && <span>{item.label}</span>}
-            </button>
-          ))}
+        <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+          <div className="space-y-2">
+            {[
+              { id: "overview", label: "Dashboard", icon: Calendar },
+              { id: "events", label: "Manage Events", icon: Calendar },
+              { id: "clients", label: "Manage Clients", icon: Users },
+              { id: "staff", label: "Staff & Vendors", icon: Users },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  navigate("/admin/dashboard");
+                }}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                    ? "bg-amber-600 text-white"
+                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
+              >
+                <item.icon size={20} />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            ))}
+          </div>
 
-          <div>
+          <div className="space-y-2">
+            {sidebarOpen && <div className="px-4 text-xs uppercase tracking-wider text-gray-500">Venue Management</div>}
             <button
               onClick={() => {
                 setVenueOpen((v) => !v);
@@ -205,13 +333,42 @@ function AdminDashboard() {
                   <button
                     key={item.key}
                     onClick={() => navigate(`/admin/venue-management/${item.key}`)}
-                    className="w-full text-left px-4 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
+                      location.pathname === `/admin/venue-management/${item.key}`
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    }`}
                   >
                     {item.label}
                   </button>
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { id: "bookings", label: "Bookings", icon: Clock },
+              { id: "payments", label: "Payments", icon: DollarSign },
+              { id: "reports", label: "Reports", icon: TrendingUp },
+              { id: "settings", label: "Settings", icon: Settings },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  navigate("/admin/dashboard");
+                }}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                    ? "bg-amber-600 text-white"
+                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
+              >
+                <item.icon size={20} />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            ))}
           </div>
         </nav>
 
@@ -449,55 +606,88 @@ function AdminDashboard() {
                     </div>
                   </div>
 
-                  <button className="w-full mt-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white py-2 rounded-lg font-semibold transition-all">
-                    Run Auto-Audit
+                  <button onClick={runAutoAudit} className="w-full mt-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white py-2 rounded-lg font-semibold transition-all">
+                    {auditLoading ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="animate-spin" size={18} /> Auditing...
+                      </span>
+                    ) : (
+                      "Run Auto-Audit"
+                    )}
                   </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Operations Security Audit Log</h3>
+                <div className="space-y-4">
+                  {recentActivities.map((item, idx) => (
+                    <div key={idx} className="flex items-start space-x-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                      <div className="w-2 h-2 mt-2 bg-amber-500 rounded-full flex-shrink-0" />
+                      <div className="flex-1 flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{item.action}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{item.event}</p>
+                        </div>
+                        <span className="text-xs text-gray-400 whitespace-nowrap">{item.time}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           ) : activeTab === "events" ? (
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900">All Events</h3>
-                <button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-6 py-2 rounded-lg font-semibold">
-                  + New Event
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">All Events</h3>
+                  <p className="text-sm text-gray-500">Manage scheduled event deliveries and operation windows.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingEvent(null);
+                    setIsEventModalOpen(true);
+                  }}
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg font-semibold flex items-center space-x-2 transition-all"
+                >
+                  <Plus size={18} />
+                  <span>New Event</span>
                 </button>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 font-semibold text-gray-900">Event Name</th>
-                      <th className="px-6 py-3 font-semibold text-gray-900">Date</th>
-                      <th className="px-6 py-3 font-semibold text-gray-900">Venue</th>
-                      <th className="px-6 py-3 font-semibold text-gray-900">Status</th>
-                      <th className="px-6 py-3 font-semibold text-gray-900">Action</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Event Name</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Date</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Venue</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Status</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { name: "Tech Summit 2024", date: "2024-06-15", venue: "Convention Center", status: "Confirmed" },
-                      { name: "Annual Gala", date: "2024-07-20", venue: "Grand Ballroom", status: "Planning" },
-                      { name: "Wedding Ceremony", date: "2024-08-10", venue: "Garden Estate", status: "Confirmed" },
-                    ].map((event, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50 transition-colors">
+                    {events.map((event) => (
+                      <tr key={event.id} className="border-b hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-semibold text-gray-900">{event.name}</td>
                         <td className="px-6 py-4 text-gray-600">{event.date}</td>
                         <td className="px-6 py-4 text-gray-600">{event.venue}</td>
                         <td className="px-6 py-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              event.status === "Confirmed"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${event.status === "Confirmed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
                             {event.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <button className="text-amber-600 hover:text-amber-800 font-semibold">
+                        <td className="px-6 py-4 text-right">
+                          <button onClick={() => handleEditClick(event)} className="text-amber-600 hover:text-amber-800 font-semibold mr-4">
                             Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEvents((current) => current.filter((e) => e.id !== event.id));
+                              logActivity(`Deleted event ${event.name}`, event.venue);
+                            }}
+                            className="text-red-600 hover:text-red-800 font-semibold"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -508,15 +698,26 @@ function AdminDashboard() {
             </div>
           ) : activeTab === "clients" ? (
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
-                Manage Clients
-              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Manage Clients</h3>
+                  <p className="text-sm text-gray-500">Review clients by account status and event volume.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-semibold text-gray-700">Status:</label>
+                  <select
+                    value={clientFilter}
+                    onChange={(e) => setClientFilter(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 text-sm bg-white outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    <option value="All">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { name: "Tech Corp", events: 5, status: "Active" },
-                  { name: "Fashion Inc", events: 3, status: "Active" },
-                  { name: "Local NGO", events: 1, status: "Inactive" },
-                ].map((client, idx) => (
+                {clients.filter((client) => (clientFilter === "All" ? true : client.status === clientFilter)).map((client, idx) => (
                   <div
                     key={idx}
                     className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200"
@@ -525,7 +726,7 @@ function AdminDashboard() {
                     <p className="text-gray-600 text-sm mt-2">
                       Events: {client.events}
                     </p>
-                    <span className="inline-block mt-3 px-3 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold">
+                    <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold ${client.status === "Active" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}>
                       {client.status}
                     </span>
                   </div>
@@ -533,42 +734,321 @@ function AdminDashboard() {
               </div>
             </div>
           ) : activeTab === "staff" ? (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
-                Staff & Vendors
-              </h3>
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Staff & Vendors</h3>
               <div className="space-y-4">
                 {dashboardStats.staffAvailability.map((staff, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
+                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">
-                        {staff.role}
-                      </p>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div
-                          className="bg-green-500 h-2 rounded-full"
-                          style={{
-                            width: `${(staff.available / staff.total) * 100}%`,
-                          }}
-                        />
+                      <p className="font-semibold text-gray-900">{staff.role}</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2 overflow-hidden">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(staff.available / staff.total) * 100}%` }} />
                       </div>
                     </div>
                     <div className="ml-4 text-right">
-                      <p className="font-bold text-gray-900">
-                        {staff.available}/{staff.total}
-                      </p>
+                      <p className="font-bold text-gray-900">{staff.available}/{staff.total}</p>
                       <p className="text-sm text-gray-500">Available</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+          ) : activeTab === "bookings" ? (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              {bookingLoading ? (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Real-Time Ingestion Buffer</h3>
+                  <p className="text-sm text-gray-500 mb-6">Live visual monitoring array streams</p>
+                  <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+                    <Loader2 className="animate-spin text-amber-500 mb-4" size={36} />
+                    <p className="font-semibold text-gray-800">Polling Upstream API Connection Gateways...</p>
+                    <p className="text-gray-400 text-xs mt-1">Data refreshes dynamically every 5000ms.</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-gray-100 mb-6 gap-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-1">Booking Operations</h3>
+                      <p className="text-sm text-gray-500">Track and adjust booking statuses.</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500 font-medium">Filter:</span>
+                      <select
+                        value={bookingFilter}
+                        onChange={(e) => setBookingFilter(e.target.value)}
+                        className="border border-gray-300 rounded-md p-2 text-sm bg-white outline-none focus:border-amber-500 cursor-pointer"
+                      >
+                        <option value="All">All Bookings</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg border border-gray-200">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          <th className="py-3.5 px-4">Booking ID</th>
+                          <th className="py-3.5 px-4">Client</th>
+                          <th className="py-3.5 px-4">Event</th>
+                          <th className="py-3.5 px-4">Date</th>
+                          <th className="py-3.5 px-4">Amount</th>
+                          <th className="py-3.5 px-4">Status</th>
+                          <th className="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                        {filteredBookings.length === 0 ? (
+                          <tr>
+                            <td colSpan="7" className="text-center py-8 text-gray-400 font-medium bg-gray-50/80">
+                              No active transactional records found.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredBookings.map((item) => (
+                            <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                              <td className="py-3.5 px-4 font-mono font-bold text-gray-900">{item.id}</td>
+                              <td className="py-3.5 px-4 font-medium">{item.client}</td>
+                              <td className="py-3.5 px-4 text-gray-600">{item.eventName}</td>
+                              <td className="py-3.5 px-4 text-gray-500">{item.date}</td>
+                              <td className="py-3.5 px-4 font-semibold text-gray-900">{item.amount}</td>
+                              <td className="py-3.5 px-4">
+                                <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${item.status === "Confirmed" ? "bg-green-100 text-green-800 border-green-200" : item.status === "Pending" ? "bg-amber-100 text-amber-800 border-amber-200" : "bg-red-100 text-red-800 border-red-200"}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                  {item.status !== "Confirmed" && (
+                                    <button
+                                      onClick={() => handleBookingStatusChange(item.id, "Confirmed")}
+                                      className="px-2 py-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                                    >
+                                      Confirm
+                                    </button>
+                                  )}
+                                  {item.status !== "Pending" && (
+                                    <button
+                                      onClick={() => handleBookingStatusChange(item.id, "Pending")}
+                                      className="px-2 py-1 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
+                                    >
+                                      Hold
+                                    </button>
+                                  )}
+                                  {item.status !== "Cancelled" && (
+                                    <button
+                                      onClick={() => handleBookingStatusChange(item.id, "Cancelled")}
+                                      className="px-2 py-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : activeTab === "payments" ? (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-1">Accounting Ledger</h3>
+              <p className="text-sm text-gray-500 mb-6">Toggle invoice payment status directly.</p>
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Invoice ID</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Amount</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm">Status</th>
+                      <th className="px-6 py-3.5 font-semibold text-gray-700 text-sm text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {payments.map((payment) => (
+                      <tr key={payment.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 font-mono font-bold text-sm text-gray-900">{payment.id}</td>
+                        <td className="px-6 py-4 font-semibold text-gray-800 text-sm">{payment.amount}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${payment.status === "Paid" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => togglePaymentStatus(payment.id)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-bold transition-all border border-gray-300"
+                          >
+                            Mark as {payment.status === "Paid" ? "Pending" : "Paid"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : activeTab === "reports" ? (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-1">Reports</h3>
+              <p className="text-sm text-gray-500 mb-6">Export operational insights across events, finance, staff, and vendors.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {["Revenue Report", "Event Analytics", "Staff Performance", "Vendor Report"].map((report) => (
+                  <button
+                    key={report}
+                    onClick={() => generateReport(report)}
+                    disabled={reportDownloading !== null}
+                    className="p-5 border border-gray-200 rounded-xl hover:border-amber-500 text-left transition-all hover:shadow-sm flex justify-between items-center bg-white group disabled:opacity-50"
+                  >
+                    <div>
+                      <p className="font-bold text-gray-900 group-hover:text-amber-600 transition-colors">{report}</p>
+                      <p className="text-xs text-gray-400 mt-1">Download as CSV</p>
+                    </div>
+                    {reportDownloading === report ? (
+                      <Loader2 className="animate-spin text-amber-600" size={20} />
+                    ) : (
+                      <TrendingUp size={20} className="text-gray-400 group-hover:text-amber-500 transition-colors" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : activeTab === "settings" ? (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 max-w-2xl">
+              <h3 className="text-xl font-bold text-gray-900 mb-1">System Settings</h3>
+              <p className="text-sm text-gray-500 mb-6">Toggle core admin system behavior.</p>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Email Notifications</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Daily alert and report dispatches.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.emailNotifications}
+                    onChange={(e) => setSettings((current) => ({ ...current, emailNotifications: e.target.checked }))}
+                    className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Two-Factor Authentication</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Strengthens admin console security.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.twoFactor}
+                    onChange={(e) => setSettings((current) => ({ ...current, twoFactor: e.target.checked }))}
+                    className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">System Maintenance Mode</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Pause scheduled dispatches for maintenance.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.systemMaintenance}
+                    onChange={(e) => setSettings((current) => ({ ...current, systemMaintenance: e.target.checked }))}
+                    className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
           ) : null}
         </div>
       </div>
+
+      {isEventModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-gray-100">
+            <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+              <h4 className="text-lg font-bold text-gray-900">{editingEvent ? "Edit Event" : "Create New Event"}</h4>
+              <button onClick={() => setIsEventModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveEvent} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Event Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingEvent ? editingEvent.name : newEvent.name}
+                  onChange={(e) =>
+                    editingEvent
+                      ? setEditingEvent((current) => ({ ...current, name: e.target.value }))
+                      : setNewEvent((current) => ({ ...current, name: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none focus:border-amber-500 bg-gray-50"
+                  placeholder="e.g. Bangalore Corporate Meet"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={editingEvent ? editingEvent.date : newEvent.date}
+                    onChange={(e) =>
+                      editingEvent
+                        ? setEditingEvent((current) => ({ ...current, date: e.target.value }))
+                        : setNewEvent((current) => ({ ...current, date: e.target.value }))
+                    }
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none focus:border-amber-500 bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
+                  <select
+                    value={editingEvent ? editingEvent.status : newEvent.status}
+                    onChange={(e) =>
+                      editingEvent
+                        ? setEditingEvent((current) => ({ ...current, status: e.target.value }))
+                        : setNewEvent((current) => ({ ...current, status: e.target.value }))
+                    }
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none focus:border-amber-500 bg-gray-50"
+                  >
+                    <option value="Planning">Planning</option>
+                    <option value="Confirmed">Confirmed</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Venue</label>
+                <input
+                  type="text"
+                  required
+                  value={editingEvent ? editingEvent.venue : newEvent.venue}
+                  onChange={(e) =>
+                    editingEvent
+                      ? setEditingEvent((current) => ({ ...current, venue: e.target.value }))
+                      : setNewEvent((current) => ({ ...current, venue: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none focus:border-amber-500 bg-gray-50"
+                  placeholder="e.g. Skyline Convention Hall"
+                />
+              </div>
+              <div className="flex justify-end space-x-2 pt-2">
+                <button type="button" onClick={() => setIsEventModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-100 rounded-lg transition-all">
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition-all">
+                  Save Event
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
