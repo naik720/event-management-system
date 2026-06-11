@@ -16,14 +16,23 @@ const Register = () => {
 
   const roles = ["Client"];
 
+  const isValidPhone = (phone) => /^\d{10}$/.test(phone);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const sanitizedValue = name === "phone" ? value.replace(/\D/g, "").slice(0, 10) : value;
+    setFormData({ ...formData, [name]: sanitizedValue });
     setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!isValidPhone(formData.phone.trim())) {
+      setError("Please add a valid 10-digit phone number.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
@@ -155,6 +164,9 @@ const Register = () => {
                 <input
                   name="phone"
                   type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
                   required
                   value={formData.phone}
                   onChange={handleChange}

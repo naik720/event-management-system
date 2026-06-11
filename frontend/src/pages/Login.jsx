@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
+import { saveClientProfile } from "../user-dashboard/services/clientSession";
 
 function Login() {
   const navigate = useNavigate();
@@ -53,9 +54,17 @@ function Login() {
       const data = await response.json();
 
       if (response.ok && data.token) {
+        const loginTime = new Date().toISOString();
+        const updatedUser = {
+          ...data.user,
+          lastLogin: loginTime,
+          memberSince: data.user.createdAt || loginTime,
+        };
+
         localStorage.setItem("token", data.token);
-        localStorage.setItem("loggedInUser", JSON.stringify(data.user));
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        saveClientProfile(updatedUser);
 
         // 🚀 Redirect securely to the correct dashboard routes
         setTimeout(() => {
@@ -87,9 +96,17 @@ function Login() {
         const data = await response.json();
 
         if (data.success) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+          const loginTime = new Date().toISOString();
+          const updatedUser = {
+            ...data.user,
+            lastLogin: loginTime,
+            memberSince: data.user.createdAt || loginTime,
+          };
+
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
           if (data.token) localStorage.setItem("token", data.token);
+          saveClientProfile(updatedUser);
 
           // 🚀 Redirect securely to the correct dashboard routes (Google Login)
           setTimeout(() => {
@@ -150,7 +167,12 @@ function Login() {
 
             <div className="flex justify-between mb-2">
               <label className="text-white">Password</label>
-              <span className="text-blue-400 cursor-pointer text-sm hover:underline">Forgot password?</span>
+              <span
+                onClick={() => navigate('/forgot-password')}
+                className="text-blue-400 cursor-pointer text-sm hover:underline"
+              >
+                Forgot password?
+              </span>
             </div>
             <input
               name="password"

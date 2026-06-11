@@ -43,7 +43,7 @@ function Home() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-5xl font-bold text-center mb-8 text-gray-800">About Us</h1>
           <p className="text-center text-lg text-gray-600 max-w-3xl mx-auto">
-            Welcome to our event management platform! We help you discover, book, and manage amazing events around you. Our mission is to make event experiences seamless and memorable for everyone.
+            Welcome to our Event Management System, where planning and organizing events becomes simple and efficient. From booking venues to managing clients, schedules, and payments, everything is available in one place. Whether it's a wedding, birthday, conference, or corporate event, our platform helps make every event smooth and memorable.
           </p>
         </div>
       </section>
@@ -53,8 +53,8 @@ function Home() {
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl font-bold mb-8 text-gray-800">Contact Event Management</h1>
           <p className="text-lg text-gray-600 mb-4">For event inquiries or support, contact us:</p>
-          <div className="text-2xl font-semibold text-pink-500 mb-2">Phone: +91 98765 43210</div>
-          <div className="text-2xl font-semibold text-pink-500">Email: eventmanagement@email.com</div>
+          <div className="text-2xl font-semibold text-pink-500 mb-2">Phone: 8095146883, 9480106621</div>
+          <div className="text-2xl font-semibold text-pink-500">Email: naikashwitha@gmail.com, keerti12@gmail.com</div>
         </div>
       </section>
 

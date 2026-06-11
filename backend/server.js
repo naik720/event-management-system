@@ -2,9 +2,12 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 const { OAuth2Client } = require("google-auth-library");
 
 const connectDB = require("./config/db");
+const adminController = require("./controllers/adminController");
 
 // =========================
 // App Initialization
@@ -25,13 +28,25 @@ connectDB();
 // Middleware
 // =========================
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
 
 // =========================
 // Routes
 // =========================
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/events", require("./routes/events"));
+app.use("/api/venues", require("./routes/venue"));
+app.use("/api/admin", require("./routes/admin"));
+app.post("/api/admin/venues/upload", adminController.uploadVenueImage);
+app.use("/api/venue-bookings", require("./routes/venueBookings"));
+app.use("/api/seating-arrangements", require("./routes/seatingArrangements"));
+app.use("/api/payments", require("./routes/payments"));
 
 // =========================
 // Event Schema
@@ -322,6 +337,17 @@ app.post("/api/auth/google", async (req, res) => {
 // =========================
 app.get("/", (req, res) => {
   res.send("Event Management Backend Running...");
+});
+
+// Catch-all 404 JSON response for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled server error:', err);
+  res.status(500).json({ success: false, message: 'Server error' });
 });
 
 // =========================

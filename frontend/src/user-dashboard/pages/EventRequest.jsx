@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { CalendarDays, ClipboardList, MapPin, Send, UserRoundCheck } from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import { getClientDisplayName, getCurrentClient } from "../services/clientSession";
+import { createVenueBooking } from "../services/userApi";
 import "../styles/dashboard.css";
 
 const requestHistory = [
@@ -30,14 +32,16 @@ const requestHistory = [
 ];
 
 const EventRequest = () => {
+  const location = useLocation();
+  const selectedVenue = location.state?.venue;
   const currentClient = getCurrentClient();
   const clientName = getClientDisplayName(currentClient);
   const [formData, setFormData] = useState({
-    title: "",
+    title: selectedVenue ? `Booking request for ${selectedVenue.name}` : "",
     eventType: "Corporate",
     date: "",
     guests: "",
-    location: "",
+    location: selectedVenue?.location || "",
     notes: "",
   });
   const [message, setMessage] = useState("");
@@ -58,17 +62,39 @@ const EventRequest = () => {
     setMessage("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setMessage("Event request submitted. Booking team will review and confirm availability.");
-    setFormData({
-      title: "",
-      eventType: "Corporate",
-      date: "",
-      guests: "",
-      location: "",
-      notes: "",
-    });
+
+    const bookingData = {
+      userId: currentClient.id || currentClient._id || currentClient.userId || "guest",
+      clientName,
+      clientEmail: currentClient.email || currentClient.phone || "",
+      venueId: selectedVenue?._id || selectedVenue?.id || "",
+      venueName: selectedVenue?.name || formData.title,
+      eventTitle: formData.title,
+      eventType: formData.eventType,
+      eventDate: formData.date,
+      guests: Number(formData.guests),
+      location: formData.location,
+      notes: formData.notes,
+      status: "Pending",
+      image: selectedVenue?.image || selectedVenue?.photo || "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80",
+    };
+
+    try {
+      await createVenueBooking(bookingData);
+      setMessage("Your booking request was submitted. Admin will review and confirm shortly.");
+      setFormData({
+        title: selectedVenue ? `Booking request for ${selectedVenue.name}` : "",
+        eventType: "Corporate",
+        date: "",
+        guests: "",
+        location: selectedVenue?.location || "",
+        notes: "",
+      });
+    } catch (error) {
+      setMessage("Unable to submit the request. Please try again later.");
+    }
   };
 
   return (
@@ -92,6 +118,18 @@ const EventRequest = () => {
             </article>
           ))}
         </section>
+
+        {selectedVenue && (
+          <section className="profile-panel selected-venue-card">
+            <h2>Selected Venue</h2>
+            <div className="selected-venue-details">
+              <strong>{selectedVenue.name}</strong>
+              <p>{selectedVenue.location}</p>
+              <p>{selectedVenue.type} • Capacity {selectedVenue.capacity}</p>
+              <p>{selectedVenue.description}</p>
+            </div>
+          </section>
+        )}
 
         <div className="client-management-grid">
           <section className="profile-panel">

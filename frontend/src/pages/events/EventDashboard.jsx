@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import {
@@ -25,11 +25,7 @@ function EventDashboard() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 
-  useEffect(() => {
-    fetchEventData();
-  }, [eventId]);
-
-  const fetchEventData = async () => {
+  const fetchEventData = useCallback(async () => {
     try {
       const response = await eventAPI.getEventDetails(eventId);
       setEvent(response.data.event);
@@ -38,7 +34,11 @@ function EventDashboard() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch event data");
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchEventData();
+  }, [fetchEventData]);
 
   const handleStatusUpdate = async (newStatus) => {
     setLoading(true);

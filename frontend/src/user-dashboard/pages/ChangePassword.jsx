@@ -12,19 +12,17 @@ import {
   Settings,
   ShieldCheck,
 } from "lucide-react";
-
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import "../styles/dashboard.css";
+import { getCurrentClient } from "../services/clientSession";
 
-const getCurrentUser = () => {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-  const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
-  return { ...registeredUser, ...loggedInUser };
-};
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
 
 const ChangePassword = () => {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const currentUser = getCurrentClient();
   const [mode, setMode] = useState("password");
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -33,7 +31,6 @@ const ChangePassword = () => {
     email: currentUser.email || "",
     otp: "",
   });
-  const [generatedOtp, setGeneratedOtp] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -53,10 +50,14 @@ const ChangePassword = () => {
   const saveNewPassword = (newPassword) => {
     const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-    const updatedRegisteredUser = { ...registeredUser, password: newPassword };
-    const updatedLoggedInUser = { ...registeredUser, ...loggedInUser, password: newPassword };
+    const currentEmail = normalizeEmail(currentUser.email);
 
-    localStorage.setItem("registeredUser", JSON.stringify(updatedRegisteredUser));
+    if (registeredUser && normalizeEmail(registeredUser.email) === currentEmail) {
+      const updatedRegisteredUser = { ...registeredUser, password: newPassword };
+      localStorage.setItem("registeredUser", JSON.stringify(updatedRegisteredUser));
+    }
+
+    const updatedLoggedInUser = { ...loggedInUser, password: newPassword };
     localStorage.setItem("loggedInUser", JSON.stringify(updatedLoggedInUser));
   };
 
@@ -89,26 +90,66 @@ const ChangePassword = () => {
   };
 
   const sendOtp = () => {
-    if (formData.email.trim().toLowerCase() !== currentUser.email) {
+    const inputEmail = (formData.email || "").trim().toLowerCase();
+    const registeredEmail = (currentUser.email || "").trim().toLowerCase();
+
+    if (!inputEmail || inputEmail !== registeredEmail) {
       setError("Please enter your registered email address.");
       return;
     }
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    setGeneratedOtp(otp);
-    setMessage(`OTP sent to ${formData.email}. Demo OTP: ${otp}`);
+    fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ email: inputEmail }),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let data = {};
+        if (text) {
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            try {
+              data = JSON.parse(text);
+            } catch (parseError) {
+              console.error("Failed to parse send-otp response as JSON:", text);
+              throw new Error(text || "Invalid response from server.");
+            }
+          } else {
+            throw new Error(text || "Invalid response from server.");
+          }
+        }
+        return { res, data };
+      })
+      .then(({ res, data }) => {
+        if (res.ok && data.success) {
+          setMessage(data.message || `Verification code sent to ${formData.email}`);
+          setError("");
+          try {
+            if (data.previewUrl && process.env.NODE_ENV !== 'production') {
+              window.open(data.previewUrl, '_blank');
+            }
+          } catch (e) {
+            // ignore
+          }
+        } else {
+          setError(data?.message || "Failed to send verification code.");
+        }
+      })
+      .catch((err) => {
+        console.error("Send OTP error:", err);
+        setError(err?.message || "Failed to send verification code.");
+      });
   };
 
   const handleForgotSubmit = (event) => {
     event.preventDefault();
-
-    if (!generatedOtp) {
-      setError("Please send OTP first.");
-      return;
-    }
-
-    if (formData.otp !== generatedOtp) {
-      setError("Invalid OTP.");
+    const inputEmail = (formData.email || "").trim().toLowerCase();
+    if (!inputEmail) {
+      setError("Please provide your registered email.");
       return;
     }
 
@@ -122,15 +163,51 @@ const ChangePassword = () => {
       return;
     }
 
-    saveNewPassword(formData.newPassword);
-    setGeneratedOtp("");
-    setFormData((currentData) => ({
-      ...currentData,
-      otp: "",
-      newPassword: "",
-      confirmPassword: "",
-    }));
-    setMessage("Password reset successfully. You can use the new password now.");
+    fetch(`${API_BASE_URL}/api/auth/verify-otp-reset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ email: inputEmail, code: formData.otp, newPassword: formData.newPassword }),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let data = {};
+        if (text) {
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            try {
+              data = JSON.parse(text);
+            } catch (parseError) {
+              console.error("Failed to parse verify-otp-reset response as JSON:", text);
+              throw new Error(text || "Invalid response from server.");
+            }
+          } else {
+            throw new Error(text || "Invalid response from server.");
+          }
+        }
+        return { res, data };
+      })
+      .then(({ res, data }) => {
+        if (res.ok && data.success) {
+          saveNewPassword(formData.newPassword);
+          setFormData((currentData) => ({
+            ...currentData,
+            otp: "",
+            newPassword: "",
+            confirmPassword: "",
+          }));
+          setMessage(data.message || "Password reset successfully. You can use the new password now.");
+          setError("");
+        } else {
+          setError(data?.message || "Failed to reset password.");
+        }
+      })
+      .catch((err) => {
+        console.error("OTP verify/reset error:", err);
+        setError(err?.message || "Failed to reset password.");
+      });
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Users, Package } from "lucide-react";
@@ -20,13 +20,7 @@ function EventResources() {
     notes: "",
   });
 
-  useEffect(() => {
-    if (eventId) {
-      fetchEventDetails();
-    }
-  }, [eventId]);
-
-  const fetchEventDetails = async () => {
+  const fetchEventDetails = useCallback(async () => {
     try {
       const response = await eventAPI.getEventDetails(eventId);
       setEvent(response.data.event);
@@ -34,7 +28,13 @@ function EventResources() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch event details");
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (eventId) {
+      fetchEventDetails();
+    }
+  }, [eventId, fetchEventDetails]);
 
   const handleAddResource = async () => {
     if (!newResource.name.trim()) {

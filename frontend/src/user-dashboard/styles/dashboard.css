@@ -22,6 +22,7 @@ button{
 .sidebar{
   width:250px;
   background:linear-gradient(180deg,#07111f 0%,#10213d 100%);
+  background-color:#07111f;
   color:white;
   padding:20px;
   display:flex;
@@ -29,8 +30,24 @@ button{
   justify-content:space-between;
   position:sticky;
   top:0;
-  height:100vh;
+  min-height:100vh;
+  max-height:100vh;
+  overflow:hidden;
   flex-shrink:0;
+}
+
+.sidebar-content{
+  overflow-y:auto;
+  padding-right:4px;
+}
+
+.sidebar-content::-webkit-scrollbar{
+  width:8px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.18);
+  border-radius:999px;
 }
 
 .logo-section{
@@ -1710,11 +1727,18 @@ button{
   min-width:150px;
 }
 
-.profile-mini-user img{
+.profile-mini-user img,
+.profile-mini-user-placeholder{
   width:42px;
   height:42px;
   border-radius:50%;
   object-fit:cover;
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+}
+
+.profile-mini-user img{
+  background:transparent;
 }
 
 .profile-mini-user p{
@@ -1791,12 +1815,15 @@ button{
   flex-shrink:0;
 }
 
-.profile-photo-wrap img{
+.profile-photo-wrap img,
+.profile-photo-blank{
   width:100%;
   height:100%;
   border-radius:50%;
   object-fit:cover;
   display:block;
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
 }
 
 .profile-photo-wrap button{

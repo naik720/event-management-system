@@ -3,15 +3,17 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
-import { AdminProvider } from './context/AdminContext';
+import { AdminProvider } from './admin/context/AdminContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import reportWebVitals from './reportWebVitals';
+
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID ||
+  '685762159805-5hrhspefo76lum330n5lk4eiuqhnq78p.apps.googleusercontent.com';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-
-    <GoogleOAuthProvider clientId="685762159805-5hrhspefo76lum330n5lk4eiuqhnq78p.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={googleClientId}>
       <BrowserRouter>
         <AdminProvider>
           <App />

@@ -14,10 +14,12 @@ import {
   Ticket,
   WalletCards,
   XCircle,
+  X as CloseIcon,
+  Users,
 } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import { getBookings } from "../services/userApi";
 import "../styles/dashboard.css";
@@ -25,57 +27,62 @@ import "../styles/dashboard.css";
 const fallbackBookings = [
   {
     id: "BK-2026-001",
-    title: "Music Concert 2026",
-    date: "May 25, 2026",
-    time: "7:00 PM",
-    location: "Auditorium Hall, New York",
-    status: "Confirmed",
-    amount: 320,
+    eventTitle: "Music Concert 2026",
+    eventType: "Concert",
+    venueName: "Auditorium Hall",
+    eventDate: "May 25, 2026",
+    location: "New York",
+    status: "Approved",
+    guests: 120,
     image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80",
   },
   {
     id: "BK-2026-002",
-    title: "Tech Conference",
-    date: "Jun 10, 2026",
-    time: "9:00 AM",
-    location: "Tech Park, New York",
+    eventTitle: "Tech Conference",
+    eventType: "Conference",
+    venueName: "Tech Park",
+    eventDate: "Jun 10, 2026",
+    location: "New York",
     status: "Pending",
-    amount: 450,
+    guests: 220,
     image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=500&q=80",
   },
   {
     id: "BK-2026-003",
-    title: "Design Workshop",
-    date: "Jun 18, 2026",
-    time: "2:00 PM",
-    location: "Creative Hub, New York",
-    status: "Confirmed",
-    amount: 180,
+    eventTitle: "Design Workshop",
+    eventType: "Workshop",
+    venueName: "Creative Hub",
+    eventDate: "Jun 18, 2026",
+    location: "New York",
+    status: "Approved",
+    guests: 80,
     image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=500&q=80",
   },
   {
     id: "BK-2026-004",
-    title: "Food Festival 2026",
-    date: "Jul 05, 2026",
-    time: "6:00 PM",
-    location: "Central Park, New York",
-    status: "Cancelled",
-    amount: 150,
+    eventTitle: "Food Festival 2026",
+    eventType: "Festival",
+    venueName: "Central Park",
+    eventDate: "Jul 05, 2026",
+    location: "New York",
+    status: "Rejected",
+    guests: 200,
     image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=500&q=80",
   },
   {
     id: "BK-2026-005",
-    title: "Sports Event Live",
-    date: "Jun 20, 2026",
-    time: "8:00 PM",
-    location: "Stadium Arena, New York",
-    status: "Confirmed",
-    amount: 280,
+    eventTitle: "Sports Event Live",
+    eventType: "Sport",
+    venueName: "Stadium Arena",
+    eventDate: "Jun 20, 2026",
+    location: "New York",
+    status: "Approved",
+    guests: 320,
     image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=500&q=80",
   },
 ];
 
-const tabs = ["All Bookings", "Upcoming", "Completed", "Pending", "Cancelled"];
+const tabs = ["All Bookings", "Pending", "Approved", "Rejected"];
 
 const quickActions = [
   { label: "Browse Events", icon: CalendarDays },
@@ -85,10 +92,9 @@ const quickActions = [
 ];
 
 const bookingStatusColors = {
-  Confirmed: "#22c55e",
+  Approved: "#22c55e",
   Pending: "#f59e0b",
-  Completed: "#3b82f6",
-  Cancelled: "#ef4444",
+  Rejected: "#ef4444",
 };
 
 const MyBookings = () => {
@@ -99,58 +105,55 @@ const MyBookings = () => {
   const [activeTab, setActiveTab] = useState("All Bookings");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBookingForDetail, setSelectedBookingForDetail] = useState(null);
+  const userId = currentClient.id || currentClient._id || currentClient.userId || "";
 
   useEffect(() => {
-    getBookings()
-      .then(setBookings)
+    getBookings(userId)
+      .then((data) => setBookings(data.length ? data : fallbackBookings))
       .catch(() => setBookings(fallbackBookings))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [userId]);
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
       const searchText = searchTerm.trim().toLowerCase();
       const matchesTab =
         activeTab === "All Bookings" ||
-        booking.status === activeTab ||
-        (activeTab === "Upcoming" && booking.status === "Confirmed");
+        booking.status === activeTab;
       const matchesSearch =
-        booking.title.toLowerCase().includes(searchText) ||
-        booking.id.toLowerCase().includes(searchText) ||
-        booking.location.toLowerCase().includes(searchText);
+        (booking.eventTitle || booking.title || "").toLowerCase().includes(searchText) ||
+        (booking.venueName || booking.location || "").toLowerCase().includes(searchText) ||
+        (booking.eventType || "").toLowerCase().includes(searchText);
 
       return matchesTab && matchesSearch;
     });
   }, [bookings, activeTab, searchTerm]);
 
   const counts = useMemo(() => {
-    const confirmed = bookings.filter((booking) => booking.status === "Confirmed").length;
+    const approved = bookings.filter((booking) => booking.status === "Approved").length;
     const pending = bookings.filter((booking) => booking.status === "Pending").length;
-    const completed = bookings.filter((booking) => booking.status === "Completed").length || 2;
-    const cancelled = bookings.filter((booking) => booking.status === "Cancelled").length;
+    const rejected = bookings.filter((booking) => booking.status === "Rejected").length;
 
     return {
-      total: bookings.length + 3,
-      confirmed,
+      total: bookings.length,
+      approved,
       pending,
-      completed,
-      cancelled,
+      rejected,
     };
   }, [bookings]);
 
   const chartData = [
-    { name: "Confirmed", value: 4, color: bookingStatusColors.Confirmed },
-    { name: "Pending", value: 2, color: bookingStatusColors.Pending },
-    { name: "Completed", value: 2, color: bookingStatusColors.Completed },
-    { name: "Cancelled", value: 0, color: bookingStatusColors.Cancelled },
+    { name: "Approved", value: counts.approved || 0, color: bookingStatusColors.Approved },
+    { name: "Pending", value: counts.pending || 0, color: bookingStatusColors.Pending },
+    { name: "Rejected", value: counts.rejected || 0, color: bookingStatusColors.Rejected },
   ];
 
   const statCards = [
-    { label: "Total Bookings", value: "08", helper: "All time bookings", icon: CalendarDays, tone: "orange" },
-    { label: "Upcoming Events", value: "04", helper: "Confirmed bookings", icon: Ticket, tone: "green" },
-    { label: "Pending Confirmation", value: "02", helper: "Awaiting confirmation", icon: Clock3, tone: "purple" },
-    { label: "Completed Events", value: "02", helper: "Successfully completed", icon: CheckCircle2, tone: "blue" },
-    { label: "Cancelled Events", value: "00", helper: "Cancelled bookings", icon: XCircle, tone: "red" },
+    { label: "Total Bookings", value: counts.total.toString(), helper: "All bookings", icon: CalendarDays, tone: "orange" },
+    { label: "Approved", value: counts.approved.toString(), helper: "Confirmed by admin", icon: CheckCircle2, tone: "green" },
+    { label: "Pending", value: counts.pending.toString(), helper: "Awaiting review", icon: Clock3, tone: "purple" },
+    { label: "Rejected", value: counts.rejected.toString(), helper: "Not approved", icon: XCircle, tone: "red" },
   ];
 
   return (
@@ -237,48 +240,154 @@ const MyBookings = () => {
               )}
 
               {filteredBookings.map((booking) => (
-                <article className="booking-row-card" key={booking.id}>
-                  <img src={booking.image} alt={booking.title} />
+                <article className="booking-row-card" key={booking.id || booking._id}>
+                  <img
+                    src={booking.image || "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80"}
+                    alt={booking.eventTitle || booking.title || "Booking image"}
+                  />
 
                   <div className="booking-main-info">
-                    <h3>{booking.title}</h3>
+                    <h3>{booking.eventTitle || booking.title}</h3>
                     <div className="booking-row-meta">
                       <span>
                         <CalendarDays size={14} />
-                        {booking.date}
-                      </span>
-                      <span>
-                        <Clock3 size={14} />
-                        {booking.time}
+                        {booking.eventDate || booking.date}
                       </span>
                       <span>
                         <MapPin size={14} />
-                        {booking.location}
+                        {booking.venueName || booking.location}
+                      </span>
+                      <span>
+                        <Clock3 size={14} />
+                        {booking.eventType || "Event"}
                       </span>
                     </div>
                   </div>
 
                   <div className="booking-id-block">
-                    <span className={`booking-state state-${booking.status.toLowerCase()}`}>
+                    <span className={`booking-state state-${(booking.status || "pending").toLowerCase()}`}>
                       {booking.status}
                     </span>
                     <p>Booking ID</p>
-                    <strong>{booking.id}</strong>
+                    <strong>{booking.id || booking._id || "N/A"}</strong>
                   </div>
 
                   <div className="booking-amount">
-                    <p>Total Amount</p>
-                    <strong>${booking.amount.toFixed(2)}</strong>
+                    <p>Guest Count</p>
+                    <strong>{booking.guests || "—"}</strong>
                   </div>
 
                   <div className="booking-row-actions">
-                    <button type="button">View Details</button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBookingForDetail(booking)}
+                    >
+                      View Details
+                    </button>
                     <MoreVertical size={18} />
                   </div>
                 </article>
               ))}
             </div>
           </section>
+
+          {selectedBookingForDetail && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setSelectedBookingForDetail(null)}>
+              <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-slate-900">Booking Details</h2>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBookingForDetail(null)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    <CloseIcon size={24} />
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  <img
+                    src={selectedBookingForDetail.image || "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80"}
+                    alt={selectedBookingForDetail.eventTitle}
+                    className="w-full h-64 object-cover rounded-2xl"
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Event Name</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2">{selectedBookingForDetail.eventTitle}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Event Type</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2">{selectedBookingForDetail.eventType}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Venue</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2">{selectedBookingForDetail.venueName}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Location</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2">{selectedBookingForDetail.location}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Event Date</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2">{selectedBookingForDetail.eventDate}</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Expected Guests</p>
+                      <p className="text-lg font-semibold text-slate-900 mt-2 flex items-center gap-2">
+                        <Users size={18} />
+                        {selectedBookingForDetail.guests}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Status</p>
+                    <span className={`inline-block mt-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                      selectedBookingForDetail.status === "Approved"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : selectedBookingForDetail.status === "Pending"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-rose-100 text-rose-700"
+                    }`}>
+                      {selectedBookingForDetail.status}
+                    </span>
+                  </div>
+
+                  {selectedBookingForDetail.notes && (
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-400">Special Requests</p>
+                      <p className="text-slate-700 mt-2">{selectedBookingForDetail.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl bg-slate-100 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Booking ID</p>
+                    <p className="text-lg font-mono font-semibold text-slate-900 mt-2">{selectedBookingForDetail.id || selectedBookingForDetail._id}</p>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBookingForDetail(null)}
+                      className="flex-1 rounded-2xl border border-slate-300 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      Close
+                    </button>
+                    {selectedBookingForDetail.status === "Approved" && (
+                      <button
+                        type="button"
+                        className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 transition"
+                      >
+                        Proceed to Payment
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <aside className="booking-side-panel">
             <section className="booking-overview-card">

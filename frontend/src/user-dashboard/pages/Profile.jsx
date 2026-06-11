@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -8,12 +8,10 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  CircleDollarSign,
   Clock3,
   CreditCard,
   Edit3,
   Gift,
-  Globe2,
   Lock,
   Mail,
   MapPin,
@@ -26,22 +24,13 @@ import {
   User,
 } from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import {
-  CLIENT_PROFILE_PHOTO_KEY,
-  DEFAULT_CLIENT_PHOTO,
-  getClientPhoto,
+  getCurrentClient,
+  saveClientProfile,
 } from "../services/clientSession";
+import { getBookings } from "../services/userApi";
 import "../styles/dashboard.css";
-
-const profileStats = [
-  { label: "Total Bookings", value: "12", icon: CalendarDays, tone: "blue" },
-  { label: "Completed Events", value: "8", icon: CreditCard, tone: "green" },
-  { label: "Pending Requests", value: "3", icon: BriefcaseBusiness, tone: "orange" },
-  { label: "Total Payments", value: "$2,450", icon: CircleDollarSign, tone: "purple" },
-  { label: "Feedback Given", value: "5", icon: Star, tone: "red" },
-  { label: "Upcoming Events", value: "2", icon: Gift, tone: "yellow" },
-];
 
 const defaultProfile = {
   username: "Client",
@@ -52,17 +41,16 @@ const defaultProfile = {
   city: "",
   state: "",
   zipCode: "",
-  photo: DEFAULT_CLIENT_PHOTO,
+  photo: "",
 };
 
 const getSavedProfile = () => {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-  const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
-  const savedProfile = { ...defaultProfile, ...registeredUser, ...loggedInUser };
+  const profile = getCurrentClient();
 
   return {
-    ...savedProfile,
-    photo: getClientPhoto(savedProfile),
+    ...defaultProfile,
+    ...profile,
+    photo: profile.photo || "",
   };
 };
 
@@ -77,13 +65,19 @@ const profileFields = [
   { label: "ZIP Code", name: "zipCode", icon: Lock },
 ];
 
-const summaryItems = [
-  { label: "Account Status", value: "Active", icon: User, badge: true },
-  { label: "Member Since", value: "May 2024", icon: CalendarDays },
-  { label: "Last Login", value: "May 21, 2026 10:30 AM", icon: Clock3 },
-  { label: "Preferred Contact", value: "Email", icon: Mail },
-  { label: "Language", value: "English", icon: Globe2 },
-];
+const formatDate = (value, options) => {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return date.toLocaleString(undefined, options);
+};
+
+const formatMemberSince = (value) => {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return date.toLocaleDateString();
+};
 
 const tabs = [
   "Personal Information",
@@ -114,15 +108,58 @@ const resizeProfilePhoto = (photoDataUrl, onComplete) => {
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const currentClient = getCurrentClient();
   const [profile, setProfile] = useState(getSavedProfile);
   const [message, setMessage] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const userId = currentClient.id || currentClient._id || currentClient.userId || "";
+
+  useEffect(() => {
+    getBookings(userId)
+      .then((data) => setBookings(Array.isArray(data) ? data : []))
+      .catch(() => setBookings([]));
+  }, [userId]);
+
+  const profileStats = useMemo(() => {
+    const approved = bookings.filter((b) => b.status === "Approved").length;
+    const pending = bookings.filter((b) => b.status === "Pending").length;
+    const rejected = bookings.filter((b) => b.status === "Rejected").length;
+    const total = bookings.length;
+
+    return [
+      { label: "Total Bookings", value: total.toString(), icon: CalendarDays, tone: "blue" },
+      { label: "Approved Bookings", value: approved.toString(), icon: CheckCircle2, tone: "green" },
+      { label: "Pending Requests", value: pending.toString(), icon: Clock3, tone: "orange" },
+      { label: "Rejected Bookings", value: rejected.toString(), icon: CreditCard, tone: "red" },
+      { label: "Profile Completion", value: "85%", icon: Star, tone: "yellow" },
+      { label: "Upcoming Events", value: approved.toString(), icon: Gift, tone: "purple" },
+    ];
+  }, [bookings]);
 
   const displayName = profile.username || profile.name || "Client";
   const firstName = displayName.split(" ")[0] || "Client";
 
+  const formattedLastLogin = formatDate(profile.lastLogin, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const formattedMemberSince = profile.memberSince
+    ? formatMemberSince(profile.memberSince)
+    : "Not available";
+
+  const summaryItems = [
+    { label: "Last Login", value: formattedLastLogin, icon: Clock3, badge: true },
+    { label: "Member Since", value: formattedMemberSince, icon: CalendarDays },
+  ];
+
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    setProfile((currentProfile) => ({ ...currentProfile, [name]: value }));
+    const updatedValue = name === "phone" ? value.replace(/\D/g, "").slice(0, 10) : value;
+    setProfile((currentProfile) => ({ ...currentProfile, [name]: updatedValue }));
     setMessage("");
   };
 
@@ -151,15 +188,23 @@ const Profile = () => {
       username: profile.username.trim(),
       phone: profile.phone.trim(),
     };
+
+    if (updatedProfile.phone && !/^\d{10}$/.test(updatedProfile.phone)) {
+      setMessage("Please add a valid 10-digit phone number.");
+      return;
+    }
+
     const registeredUser = JSON.parse(localStorage.getItem("registeredUser") || "null");
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
 
     try {
       if (updatedProfile.photo) {
-        localStorage.setItem(CLIENT_PROFILE_PHOTO_KEY, updatedProfile.photo);
+        saveClientProfile(updatedProfile);
+      } else {
+        saveClientProfile(updatedProfile);
       }
 
-      if (registeredUser) {
+      if (registeredUser && registeredUser.email?.trim().toLowerCase() === updatedProfile.email) {
         localStorage.setItem(
           "registeredUser",
           JSON.stringify({ ...registeredUser, ...updatedProfile })
@@ -168,7 +213,7 @@ const Profile = () => {
 
       localStorage.setItem(
         "loggedInUser",
-        JSON.stringify({ ...registeredUser, ...loggedInUser, ...updatedProfile })
+        JSON.stringify({ ...loggedInUser, ...updatedProfile })
       );
       setProfile(updatedProfile);
       setMessage("Profile updated successfully.");
@@ -203,10 +248,11 @@ const Profile = () => {
               <Settings size={18} />
             </button>
             <div className="profile-mini-user">
-              <img
-                src={profile.photo}
-                alt={displayName}
-              />
+              {profile.photo ? (
+                <img src={profile.photo} alt={displayName} />
+              ) : (
+                <div className="profile-mini-user-placeholder" aria-hidden="true"></div>
+              )}
               <div>
                 <p>Welcome back,</p>
                 <strong>{firstName}!</strong>
@@ -230,10 +276,11 @@ const Profile = () => {
         <section className="profile-hero-card">
           <div className="profile-identity">
             <div className="profile-photo-wrap">
-              <img
-                src={profile.photo}
-                alt={displayName}
-              />
+              {profile.photo ? (
+                <img src={profile.photo} alt={displayName} />
+              ) : (
+                <div className="profile-photo-blank" aria-hidden="true"></div>
+              )}
               <button
                 type="button"
                 aria-label="Change profile photo"
@@ -269,7 +316,7 @@ const Profile = () => {
               </p>
               <div className="profile-badges">
                 <span>Active Member</span>
-                <span>Since May 2024</span>
+                <span>{formattedMemberSince}</span>
               </div>
             </div>
           </div>
@@ -308,7 +355,16 @@ const Profile = () => {
                   <span>{label}</span>
                   <div>
                     <Icon size={15} />
-                    <input name={name} value={profile[name] || ""} onChange={handleFieldChange} />
+                    <input
+                      name={name}
+                      type={name === "phone" ? "tel" : name === "dateOfBirth" ? "date" : "text"}
+                      inputMode={name === "phone" ? "numeric" : undefined}
+                      pattern={name === "phone" ? "[0-9]*" : undefined}
+                      maxLength={name === "phone" ? 10 : undefined}
+                      max={name === "dateOfBirth" ? new Date().toISOString().split("T")[0] : undefined}
+                      value={profile[name] || ""}
+                      onChange={handleFieldChange}
+                    />
                   </div>
                 </label>
               ))}

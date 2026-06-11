@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, MapPin, Clock, Calendar } from "lucide-react";
@@ -31,17 +31,13 @@ function EventDetails() {
     { title: "Event Execution", dueDate: "", status: "Pending" },
   ]);
 
-  useEffect(() => {
-    fetchEventDetails();
-  }, [eventId]);
-
-  const fetchEventDetails = async () => {
+  const fetchEventDetails = useCallback(async () => {
     try {
       const response = await eventAPI.getEventDetails(eventId);
       setEvent(response.data.event);
       if (response.data.schedule) {
-        setFormData({
-          ...formData,
+        setFormData((prev) => ({
+          ...prev,
           startDate: response.data.schedule.startDate?.split("T")[0] || "",
           endDate: response.data.schedule.endDate?.split("T")[0] || "",
           startTime: response.data.schedule.startTime || "",
@@ -53,7 +49,7 @@ function EventDetails() {
           venueZipCode: response.data.schedule.venue?.zipCode || "",
           venueCapacity: response.data.schedule.venue?.capacity || "",
           timezone: response.data.schedule.timezone || "UTC",
-        });
+        }));
         if (response.data.schedule.milestones) {
           setMilestones(response.data.schedule.milestones);
         }
@@ -61,7 +57,11 @@ function EventDetails() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch event details");
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchEventDetails();
+  }, [fetchEventDetails]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

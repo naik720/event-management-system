@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Bell, CalendarDays, CheckCircle2, CreditCard, MessageSquare } from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import { getClientDisplayName, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 

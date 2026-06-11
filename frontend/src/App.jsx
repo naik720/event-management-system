@@ -5,12 +5,14 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./admin/pages/AdminLogin";
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // Main User Dashboard Components
 import Dashboard from "./user-dashboard/pages/Dashboard";
 import BrowseEvents from "./user-dashboard/pages/BrowseEvents";
+import BrowseVenues from "./user-dashboard/pages/BrowseVenues";
 import MyBookings from "./user-dashboard/pages/MyBookings";
 import Wishlist from "./user-dashboard/pages/Wishlist";
 import Payments from "./user-dashboard/pages/payments";
@@ -18,6 +20,9 @@ import Profile from "./user-dashboard/pages/Profile";
 import ChangePassword from "./user-dashboard/pages/ChangePassword";
 import Settings from "./user-dashboard/pages/Settings";
 import HelpSupport from "./user-dashboard/pages/HelpSupport";
+import Feedback from "./user-dashboard/pages/Feedback";
+import Notification from "./user-dashboard/pages/Notification";
+import EventRequest from "./user-dashboard/pages/EventRequest";
 
 // Event Management Layout and Base Workflow Pages
 import EventManagementDashboard from "./pages/events/EventManagementDashboard";
@@ -29,17 +34,8 @@ import EventDashboard from "./pages/events/EventDashboard";
 import EventsPage from "./pages/events/EventsPage";
 import CalendarPage from "./pages/events/CalendarPage";
 
-// Venue Management Pages (NEW IMPORTS)
-import VenueDashboard from "./venue-management/pages/VenueDashboard";
-import AddVenue from "./venue-management/pages/AddVenue";
-import AllVenues from "./venue-management/pages/AllVenues";
-import MaintenanceRecords from "./venue-management/pages/MaintenanceRecords";
-import SeatingArrangements from "./venue-management/pages/SeatingArrangements";
-import VenueBookings from "./venue-management/pages/VenueBookings";
-import VenueDetails from "./venue-management/pages/VenueDetails";
-
 // Route Guard Components
-import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import AdminProtectedRoute from "./admin/components/AdminProtectedRoute";
 
 // Smart Protected Route Guard for Users
 function UserProtectedRoute({ children }) {
@@ -48,8 +44,8 @@ function UserProtectedRoute({ children }) {
   const location = useLocation();
 
   if (!loggedInUser || !token) {
-    if (location.pathname.startsWith("/user/event-management") || location.pathname.startsWith("/venue")) {
-      return <Navigate to="/login?from=venue-management" replace />;
+    if (location.pathname.startsWith("/user/event-management")) {
+      return <Navigate to="/login?from=event-management" replace />;
     }
     return <Navigate to="/login" replace />;
   }
@@ -65,7 +61,7 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<div>Forgot Password Page</div>} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* --- General User Dashboard Routes --- */}
       <Route
@@ -142,6 +138,144 @@ function App() {
           </UserProtectedRoute>
         }
       />
+      <Route
+        path="/user/notification"
+        element={
+          <UserProtectedRoute>
+            <Notification />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/user/feedback"
+        element={
+          <UserProtectedRoute>
+            <Feedback />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/user/event-request"
+        element={
+          <UserProtectedRoute>
+            <EventRequest />
+          </UserProtectedRoute>
+        }
+      />
+
+      {/* --- Client Dashboard Routes --- */}
+      <Route
+        path="/client/dashboard"
+        element={
+          <UserProtectedRoute>
+            <Dashboard />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/browse-events"
+        element={
+          <UserProtectedRoute>
+            <BrowseEvents />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/browse-venues"
+        element={
+          <UserProtectedRoute>
+            <BrowseVenues />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/my-bookings"
+        element={
+          <UserProtectedRoute>
+            <MyBookings />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/wishlist"
+        element={
+          <UserProtectedRoute>
+            <Wishlist />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/payments"
+        element={
+          <UserProtectedRoute>
+            <Payments />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/profile"
+        element={
+          <UserProtectedRoute>
+            <Profile />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/change-password"
+        element={
+          <UserProtectedRoute>
+            <ChangePassword />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/settings"
+        element={
+          <UserProtectedRoute>
+            <Settings />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/help-support"
+        element={
+          <UserProtectedRoute>
+            <HelpSupport />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/notification"
+        element={
+          <UserProtectedRoute>
+            <Notification />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/feedback"
+        element={
+          <UserProtectedRoute>
+            <Feedback />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/event-request"
+        element={
+          <UserProtectedRoute>
+            <EventRequest />
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/event/:eventId"
+        element={
+          <UserProtectedRoute>
+            <EventDetails />
+          </UserProtectedRoute>
+        }
+      />
 
       {/* --- Event Creation & Inner Management Workflow --- */}
       <Route
@@ -203,64 +337,6 @@ function App() {
         <Route path="analytics" element={<Payments />} />
       </Route>
 
-      {/* --- Venue Management System Routes (NEW SECTION) --- */}
-      <Route
-        path="/venue/dashboard"
-        element={
-          <UserProtectedRoute>
-            <VenueDashboard />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/all"
-        element={
-          <UserProtectedRoute>
-            <AllVenues />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/add"
-        element={
-          <UserProtectedRoute>
-            <AddVenue />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/bookings"
-        element={
-          <UserProtectedRoute>
-            <VenueBookings />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/maintenance"
-        element={
-          <UserProtectedRoute>
-            <MaintenanceRecords />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/seating"
-        element={
-          <UserProtectedRoute>
-            <SeatingArrangements />
-          </UserProtectedRoute>
-        }
-      />
-      <Route
-        path="/venue/details/:id"
-        element={
-          <UserProtectedRoute>
-            <VenueDetails />
-          </UserProtectedRoute>
-        }
-      />
-
       {/* --- Admin Panel Routes --- */}
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route
@@ -273,6 +349,14 @@ function App() {
       />
       <Route
         path="/admin/dashboard"
+        element={
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/venue-management/*"
         element={
           <AdminProtectedRoute>
             <AdminDashboard />

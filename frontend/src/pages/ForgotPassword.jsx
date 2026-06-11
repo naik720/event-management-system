@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -13,10 +15,51 @@ const ForgotPassword = () => {
       setError("Please enter your email.");
       return;
     }
-    // Here you would send a request to your backend to handle forgot password
-    // Example:
-    // await axios.post("/forgot-password", { email });
-    setMessage("If this email exists, a reset link will be sent.");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const text = await res.text();
+      let data = {};
+      if (text) {
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error('Failed to parse send-otp response as JSON:', text);
+            setError(text || 'Invalid response from server.');
+            return;
+          }
+        } else {
+          setError(text);
+          return;
+        }
+      }
+
+      if (res.ok && data.success) {
+        setMessage(data.message || 'If this email exists, a reset link will be sent.');
+        try {
+          if (data.previewUrl && process.env.NODE_ENV !== 'production') {
+            window.open(data.previewUrl, '_blank');
+          }
+        } catch (e) {
+          // ignore
+        }
+      } else {
+        setError(data?.message || 'Failed to send reset link.');
+      }
+    } catch (err) {
+      console.error('Forgot password send-otp failed:', err);
+      setError(err?.message || 'Failed to send reset link.');
+    }
   };
 
   return (

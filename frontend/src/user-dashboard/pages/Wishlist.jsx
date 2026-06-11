@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-import Sidebar from "../components/Sidebar";
-import WishlistEventCard from "../components/WishlistEventCard";
+import Sidebar from "../styles/components/Sidebar";
+import WishlistEventCard from "../styles/components/WishlistEventCard";
 import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 

@@ -22,7 +22,7 @@ import {
   Users,
 } from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../styles/components/Sidebar";
 import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 
