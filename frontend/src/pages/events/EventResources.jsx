@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Users, Package, CheckSquare, Square } from "lucide-react";
@@ -24,7 +24,7 @@ function EventResources() {
 
   const resourceOptions = ["Staff", "Vendor", "Catering", "Venue", "Decor", "Sound & Lighting", "Other"];
 
-  const fetchEventDetails = async () => {
+  const fetchEventDetails = useCallback(async () => {
     try {
       const response = await eventAPI.getEventDetails(eventId);
       setEvent(response.data.event);
@@ -32,13 +32,13 @@ function EventResources() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch event details");
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
     }
-  }, [eventId]);
+  }, [eventId, fetchEventDetails]);
 
   const toggleTypeCheckbox = (type) => {
     if (selectedTypes.includes(type)) {

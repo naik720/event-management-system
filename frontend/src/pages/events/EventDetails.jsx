@@ -3,10 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, MapPin, Clock, Calendar } from "lucide-react";
 
-// 1. Import the datepicker component and its core styles
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
 function EventDetails() {
   const navigate = useNavigate();
   const { eventId } = useParams();
@@ -77,7 +73,9 @@ function EventDetails() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 3. Dedicated handler for Datepicker state updates
+  const formatDateInputValue = (date) => (date ? date.toISOString().slice(0, 10) : "");
+  const parseDateInputValue = (value) => (value ? new Date(value) : null);
+
   const handleDateChange = (date, fieldName) => {
     setFormData((prev) => {
       const updated = { ...prev, [fieldName]: date };
@@ -194,30 +192,24 @@ function EventDetails() {
             <div className="space-y-3">
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">Start Date *</label>
-                <DatePicker
-                  selected={formData.startDate}
-                  onChange={(date) => handleDateChange(date, "startDate")}
-                  selectsStart
-                  startDate={formData.startDate}
-                  endDate={formData.endDate}
-                  minDate={new Date()} /* Blocks any date before today */
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formatDateInputValue(formData.startDate)}
+                  onChange={(e) => handleDateChange(parseDateInputValue(e.target.value), "startDate")}
+                  min={formatDateInputValue(new Date())}
                   className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>
 
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">End Date *</label>
-                <DatePicker
-                  selected={formData.endDate}
-                  onChange={(date) => handleDateChange(date, "endDate")}
-                  selectsEnd
-                  startDate={formData.startDate}
-                  endDate={formData.endDate}
-                  minDate={formData.startDate || new Date()} /* Blocks dates before Start Date or before today */
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formatDateInputValue(formData.endDate)}
+                  onChange={(e) => handleDateChange(parseDateInputValue(e.target.value), "endDate")}
+                  min={formatDateInputValue(formData.startDate || new Date())}
                   className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>
@@ -344,13 +336,12 @@ function EventDetails() {
             {milestones.map((milestone, index) => (
               <div key={index} className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
                 <h4 className="text-white font-medium mb-3">{milestone.title}</h4>
-                <DatePicker
-                  selected={milestone.dueDate}
-                  onChange={(date) => handleMilestoneChange(index, date)}
-                  minDate={formData.startDate || new Date()} /* Milestones can't happen before event starts */
-                  maxDate={formData.endDate || undefined} /* Milestones can't happen after event ends */
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
+                <input
+                  type="date"
+                  value={formatDateInputValue(milestone.dueDate)}
+                  onChange={(e) => handleMilestoneChange(index, parseDateInputValue(e.target.value))}
+                  min={formatDateInputValue(formData.startDate || new Date())}
+                  max={formData.endDate ? formatDateInputValue(formData.endDate) : ""}
                   className="w-full bg-slate-600/50 border border-slate-500 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>

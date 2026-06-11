@@ -19,14 +19,24 @@ export default function AllVenues() {
   const [editForm, setEditForm] = useState({});
   const [selectedVenue, setSelectedVenue] = useState(null);
 
-  const normalizeVenue = (venue) => ({
-    ...venue,
-    id: venue._id || venue.id,
-    price: typeof venue.price === "number" ? venue.price : Number(String(venue.price).replace(/[^0-9.-]/g, "")) || 0,
-    priceDisplay: formatCurrency(venue.price),
-    image: venue.images?.[0] || venue.image || placeholderImage,
-    status: venue.status || "Available",
-  });
+  const formatCurrency = useCallback((value) => {
+    if (typeof value === "number") return `$${value.toLocaleString()}`;
+    if (!value) return "N/A";
+    const digits = String(value).replace(/[^0-9.-]/g, "");
+    return digits ? `$${Number(digits).toLocaleString()}` : "N/A";
+  }, []);
+
+  const normalizeVenue = useCallback(
+    (venue) => ({
+      ...venue,
+      id: venue._id || venue.id,
+      price: typeof venue.price === "number" ? venue.price : Number(String(venue.price).replace(/[^0-9.-]/g, "")) || 0,
+      priceDisplay: formatCurrency(venue.price),
+      image: venue.images?.[0] || venue.image || placeholderImage,
+      status: venue.status || "Available",
+    }),
+    [formatCurrency]
+  );
 
   const fetchVenues = useCallback(async () => {
     setLoading(true);
@@ -46,18 +56,11 @@ export default function AllVenues() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [normalizeVenue]);
 
   useEffect(() => {
     fetchVenues();
   }, [fetchVenues]);
-
-  const formatCurrency = (value) => {
-    if (typeof value === "number") return `$${value.toLocaleString()}`;
-    if (!value) return "N/A";
-    const digits = String(value).replace(/[^0-9.-]/g, "");
-    return digits ? `$${Number(digits).toLocaleString()}` : "N/A";
-  };
 
   const filtered = useMemo(
     () => venueList.filter((v) => `${v.name} ${v.type} ${v.location}`.toLowerCase().includes(query.toLowerCase())),
