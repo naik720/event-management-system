@@ -3,6 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, MapPin, Clock, Calendar } from "lucide-react";
 
+// 1. Import the datepicker component and its core styles
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 function EventDetails() {
   const navigate = useNavigate();
   const { eventId } = useParams();
@@ -10,9 +14,10 @@ function EventDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 2. State values are now kept as actual JavaScript Date objects or null
   const [formData, setFormData] = useState({
-    startDate: "",
-    endDate: "",
+    startDate: null,
+    endDate: null,
     startTime: "",
     endTime: "",
     venueName: "",
@@ -25,10 +30,10 @@ function EventDetails() {
   });
 
   const [milestones, setMilestones] = useState([
-    { title: "Venue Selection", dueDate: "", status: "Pending" },
-    { title: "Vendor Confirmation", dueDate: "", status: "Pending" },
-    { title: "Staff Assignment", dueDate: "", status: "Pending" },
-    { title: "Event Execution", dueDate: "", status: "Pending" },
+    { title: "Venue Selection", dueDate: null, status: "Pending" },
+    { title: "Vendor Confirmation", dueDate: null, status: "Pending" },
+    { title: "Staff Assignment", dueDate: null, status: "Pending" },
+    { title: "Event Execution", dueDate: null, status: "Pending" },
   ]);
 
   const fetchEventDetails = useCallback(async () => {
@@ -38,8 +43,8 @@ function EventDetails() {
       if (response.data.schedule) {
         setFormData((prev) => ({
           ...prev,
-          startDate: response.data.schedule.startDate?.split("T")[0] || "",
-          endDate: response.data.schedule.endDate?.split("T")[0] || "",
+          startDate: response.data.schedule.startDate ? new Date(response.data.schedule.startDate) : null,
+          endDate: response.data.schedule.endDate ? new Date(response.data.schedule.endDate) : null,
           startTime: response.data.schedule.startTime || "",
           endTime: response.data.schedule.endTime || "",
           venueName: response.data.schedule.venue?.name || "",
@@ -51,7 +56,11 @@ function EventDetails() {
           timezone: response.data.schedule.timezone || "UTC",
         }));
         if (response.data.schedule.milestones) {
-          setMilestones(response.data.schedule.milestones);
+          const formattedMilestones = response.data.schedule.milestones.map(m => ({
+            ...m,
+            dueDate: m.dueDate ? new Date(m.dueDate) : null
+          }));
+          setMilestones(formattedMilestones);
         }
       }
     } catch (err) {
@@ -65,19 +74,35 @@ function EventDetails() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleMilestoneChange = (index, field, value) => {
+  // 3. Dedicated handler for Datepicker state updates
+  const handleDateChange = (date, fieldName) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [fieldName]: date };
+
+      // Auto-clear invalid combinations
+      if (fieldName === "startDate" && updated.endDate && date > updated.endDate) {
+        updated.endDate = null;
+      }
+      if (fieldName === "endDate" && updated.startDate && date < updated.startDate) {
+        updated.startDate = null;
+      }
+      return updated;
+    });
+  };
+
+  const handleMilestoneChange = (index, value) => {
     const updated = [...milestones];
-    updated[index][field] = value;
+    updated[index].dueDate = value;
     setMilestones(updated);
   };
 
   const handleSaveAndContinue = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time for accurate date comparison
+
     if (
       !formData.startDate ||
       !formData.endDate ||
@@ -89,12 +114,23 @@ function EventDetails() {
       return;
     }
 
+    // Manual Form Submission Checks
+    if (formData.startDate < today) {
+      setError("Start Date cannot be in the past");
+      return;
+    }
+
+    if (formData.startDate > formData.endDate) {
+      setError("End Date cannot be earlier than the Start Date");
+      return;
+    }
+
     setLoading(true);
     try {
       await eventAPI.saveEventSchedule({
         eventId,
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
+        startDate: formData.startDate,
+        endDate: formData.endDate,
         startTime: formData.startTime,
         endTime: formData.endTime,
         venue: {
@@ -108,7 +144,7 @@ function EventDetails() {
         timezone: formData.timezone,
         milestones: milestones.map((m) => ({
           ...m,
-          dueDate: m.dueDate ? new Date(m.dueDate) : undefined,
+          dueDate: m.dueDate ? m.dueDate : undefined,
         })),
       });
 
@@ -125,7 +161,7 @@ function EventDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 global-datepicker-dark">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -158,23 +194,31 @@ function EventDetails() {
             <div className="space-y-3">
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">Start Date *</label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleInputChange}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                <DatePicker
+                  selected={formData.startDate}
+                  onChange={(date) => handleDateChange(date, "startDate")}
+                  selectsStart
+                  startDate={formData.startDate}
+                  endDate={formData.endDate}
+                  minDate={new Date()} /* Blocks any date before today */
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>
 
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">End Date *</label>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={formData.endDate}
-                  onChange={handleInputChange}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                <DatePicker
+                  selected={formData.endDate}
+                  onChange={(date) => handleDateChange(date, "endDate")}
+                  selectsEnd
+                  startDate={formData.startDate}
+                  endDate={formData.endDate}
+                  minDate={formData.startDate || new Date()} /* Blocks dates before Start Date or before today */
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>
 
@@ -200,21 +244,7 @@ function EventDetails() {
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-300 text-sm font-medium mb-2">Timezone</label>
-                <select
-                  name="timezone"
-                  value={formData.timezone}
-                  onChange={handleInputChange}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                >
-                  <option>UTC</option>
-                  <option>EST</option>
-                  <option>CST</option>
-                  <option>MST</option>
-                  <option>PST</option>
-                </select>
-              </div>
+
             </div>
           </div>
 
@@ -314,11 +344,14 @@ function EventDetails() {
             {milestones.map((milestone, index) => (
               <div key={index} className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
                 <h4 className="text-white font-medium mb-3">{milestone.title}</h4>
-                <input
-                  type="date"
-                  value={milestone.dueDate}
-                  onChange={(e) => handleMilestoneChange(index, "dueDate", e.target.value)}
-                  className="w-full bg-slate-600/50 border border-slate-500 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                <DatePicker
+                  selected={milestone.dueDate}
+                  onChange={(date) => handleMilestoneChange(index, date)}
+                  minDate={formData.startDate || new Date()} /* Milestones can't happen before event starts */
+                  maxDate={formData.endDate || undefined} /* Milestones can't happen after event ends */
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="w-full bg-slate-600/50 border border-slate-500 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500 cursor-pointer"
                 />
               </div>
             ))}

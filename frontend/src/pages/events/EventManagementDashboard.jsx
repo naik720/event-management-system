@@ -219,7 +219,7 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           <p className="text-3xl font-bold text-gray-800">
             {events.filter(e => e.status === "Ongoing").length}
           </p>
-          <p className="text-gray-500 text-xs mt-2">Across 4 global regions</p>
+          <p className="text-gray-500 text-xs mt-2">Across 4 regions</p>
         </div>
 
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
@@ -247,7 +247,7 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           <div className="mb-6">
             <h3 className="text-lg font-bold text-gray-800">Revenue Performance</h3>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-bold text-gray-800">$428.5k</span>
+              <span className="text-3xl font-bold text-gray-800">4.5 lakh</span>
               <span className="text-gray-600 text-sm">Last 6 months</span>
             </div>
           </div>

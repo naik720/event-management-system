@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Users, Package } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Users, Package, CheckSquare, Square } from "lucide-react";
 
 function EventResources() {
   const navigate = useNavigate();
@@ -11,16 +11,20 @@ function EventResources() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Track multiple selected categories via checkboxes
+  const [selectedTypes, setSelectedTypes] = useState(["Staff"]);
+
   const [newResource, setNewResource] = useState({
-    resourceType: "Staff",
     name: "",
     description: "",
     quantity: 1,
-    cost: 0,
+    budget: 0, // Changed from cost to budget
     notes: "",
   });
 
-  const fetchEventDetails = useCallback(async () => {
+  const resourceOptions = ["Staff", "Vendor", "Catering", "Venue", "Decor", "Sound & Lighting", "Other"];
+
+  const fetchEventDetails = async () => {
     try {
       const response = await eventAPI.getEventDetails(eventId);
       setEvent(response.data.event);
@@ -28,48 +32,74 @@ function EventResources() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch event details");
     }
-  }, [eventId]);
+  };
 
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
     }
-  }, [eventId, fetchEventDetails]);
+  }, [eventId]);
+
+  const toggleTypeCheckbox = (type) => {
+    if (selectedTypes.includes(type)) {
+      // Keep at least one selected
+      if (selectedTypes.length > 1) {
+        setSelectedTypes(selectedTypes.filter((t) => t !== type));
+      }
+    } else {
+      setSelectedTypes([...selectedTypes, type]);
+    }
+  };
 
   const handleAddResource = async () => {
     if (!newResource.name.trim()) {
-      setError("Please enter resource name");
+      setError("Please enter resource details or reference name");
       return;
     }
 
     setLoading(true);
     try {
-      await eventAPI.addEventResource({
-        eventId,
-        ...newResource,
-      });
+      // Loop through all checked resource types and save them
+      const savePromises = selectedTypes.map((type) =>
+        eventAPI.addEventResource({
+          eventId,
+          resourceType: type,
+          name: newResource.name,
+          description: newResource.description,
+          quantity: newResource.quantity,
+          cost: newResource.budget, // Keep API field contract uniform as 'cost' or update backend
+          notes: newResource.notes,
+        })
+      );
 
-      setResources([
-        ...resources,
-        {
-          ...newResource,
-          _id: Date.now(),
-          status: "Available",
-        },
-      ]);
+      await Promise.all(savePromises);
 
+      // Construct unique visual instances for the UI state list split by type
+      const newEntries = selectedTypes.map((type, idx) => ({
+        _id: Date.now() + idx,
+        resourceType: type,
+        name: newResource.name,
+        description: newResource.description,
+        quantity: newResource.quantity,
+        cost: newResource.budget,
+        notes: newResource.notes,
+        status: "Available",
+      }));
+
+      setResources([...resources, ...newEntries]);
+
+      // Reset Form fields
       setNewResource({
-        resourceType: "Staff",
         name: "",
         description: "",
         quantity: 1,
-        cost: 0,
+        budget: 0,
         notes: "",
       });
-
+      setSelectedTypes(["Staff"]); // Reset back to default initial checkbox selection
       setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add resource");
+      setError(err.response?.data?.message || "Failed to add resources");
     } finally {
       setLoading(false);
     }
@@ -90,13 +120,22 @@ function EventResources() {
       await eventAPI.updateEvent(eventId, { status: "Scheduled" });
       navigate(`/user/event-dashboard/${eventId}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update event");
+      setError(err.response?.data?.message || "Failed to update event status");
     } finally {
       setLoading(false);
     }
   };
 
-  const totalCost = resources.reduce((sum, r) => sum + (r.cost || 0), 0);
+  // Compute Indian formatted Currency tracking 
+  const totalBudget = resources.reduce((sum, r) => sum + (r.cost || 0), 0);
+
+  const formatIndianCurrency = (num) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    }).format(num);
+  };
 
   if (!event) {
     return (
@@ -115,10 +154,10 @@ function EventResources() {
             <span className="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
               3
             </span>
-            Assign Resources & Staff
+            Assign Resources & Allocations
           </h2>
           <p className="text-gray-600 text-sm mt-0.5">
-            Allocate staff, vendors, equipment, and assets for <span className="font-semibold text-gray-800">{event.title}</span>
+            Allocate staff, catering, setups, and budget details for <span className="font-semibold text-gray-800">{event.title}</span>
           </p>
         </div>
       </div>
@@ -137,37 +176,43 @@ function EventResources() {
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-4">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-indigo-600" />
-                Add Resource
+                Resource Setup Form
               </h3>
 
               <div className="space-y-4">
+                {/* Checkbox Section for Types */}
                 <div>
-                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Type</label>
-                  <select
-                    value={newResource.resourceType}
-                    onChange={(e) =>
-                      setNewResource({ ...newResource, resourceType: e.target.value })
-                    }
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option>Staff</option>
-                    <option>Vendor</option>
-                    <option>Equipment</option>
-                    <option>Catering</option>
-                    <option>Venue</option>
-                    <option>Other</option>
-                  </select>
+                  <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    Select Resource Categories * (Select Multiple)
+                  </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                    {resourceOptions.map((type) => {
+                      const isChecked = selectedTypes.includes(type);
+                      return (
+                        <div
+                          key={type}
+                          onClick={() => toggleTypeCheckbox(type)}
+                          className="flex items-center gap-2.5 cursor-pointer py-1 text-gray-700 hover:text-indigo-600 transition select-none"
+                        >
+                          {isChecked ? (
+                            <CheckSquare className="w-4 h-4 text-indigo-600" />
+                          ) : (
+                            <Square className="w-4 h-4 text-gray-400" />
+                          )}
+                          <span className="text-sm font-medium">{type}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Name *</label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Name / Vendor Info *</label>
                   <input
                     type="text"
                     value={newResource.name}
-                    onChange={(e) =>
-                      setNewResource({ ...newResource, name: e.target.value })
-                    }
-                    placeholder="Resource name..."
+                    onChange={(e) => setNewResource({ ...newResource, name: e.target.value })}
+                    placeholder="e.g., Sharma Catering, Core Management Team"
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -176,10 +221,8 @@ function EventResources() {
                   <label className="block text-gray-700 text-sm font-semibold mb-1.5">Description</label>
                   <textarea
                     value={newResource.description}
-                    onChange={(e) =>
-                      setNewResource({ ...newResource, description: e.target.value })
-                    }
-                    placeholder="Details..."
+                    onChange={(e) => setNewResource({ ...newResource, description: e.target.value })}
+                    placeholder="Provide specific details about roles or inclusions..."
                     rows="2"
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                   />
@@ -187,7 +230,7 @@ function EventResources() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Quantity</label>
+                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Quantity / Units</label>
                     <input
                       type="number"
                       value={newResource.quantity}
@@ -202,31 +245,29 @@ function EventResources() {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Cost ($)</label>
+                    <label className="block text-gray-700 text-sm font-semibold mb-1.5">Estimated Budget (₹)</label>
                     <input
                       type="number"
-                      value={newResource.cost}
+                      value={newResource.budget}
                       onChange={(e) =>
                         setNewResource({
                           ...newResource,
-                          cost: parseFloat(e.target.value) || 0,
+                          budget: parseFloat(e.target.value) || 0,
                         })
                       }
                       min="0"
-                      step="0.01"
+                      placeholder="INR"
                       className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Notes</label>
+                  <label className="block text-gray-700 text-sm font-semibold mb-1.5">Special Instructions / Notes</label>
                   <textarea
                     value={newResource.notes}
-                    onChange={(e) =>
-                      setNewResource({ ...newResource, notes: e.target.value })
-                    }
-                    placeholder="Additional notes..."
+                    onChange={(e) => setNewResource({ ...newResource, notes: e.target.value })}
+                    placeholder="Advance details, payment timelines, milestones..."
                     rows="2"
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                   />
@@ -235,9 +276,9 @@ function EventResources() {
                 <button
                   onClick={handleAddResource}
                   disabled={loading}
-                  className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm"
+                  className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm text-sm"
                 >
-                  {loading ? "Adding..." : "Add Resource"}
+                  {loading ? "Adding Items..." : `Add Selected (${selectedTypes.length})`}
                 </button>
               </div>
             </div>
@@ -248,14 +289,14 @@ function EventResources() {
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Package className="w-5 h-5 text-indigo-600" />
-                Assigned Resources ({resources.length})
+                Assigned Resources & Vendors ({resources.length})
               </h3>
 
               {resources.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 font-medium">No resources assigned yet</p>
-                  <p className="text-sm text-gray-400 mt-1">Add resources using the setup form on the left</p>
+                  <p className="text-gray-500 font-medium">No resource allocations mapped yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Check appropriate categories and fill out the setup details on the left.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -276,7 +317,7 @@ function EventResources() {
                         )}
                         <div className="flex gap-4 text-xs font-semibold text-gray-500 items-center">
                           <span>Qty: {resource.quantity}</span>
-                          <span>${resource.cost}</span>
+                          <span className="text-gray-700">Budget Allocation: {formatIndianCurrency(resource.cost)}</span>
                           <span
                             className={`px-2 py-0.5 rounded text-xs ${resource.status === "Available"
                                 ? "bg-green-100 text-green-700"
@@ -304,16 +345,16 @@ function EventResources() {
               )}
             </div>
 
-            {/* Cost Summary Box Component */}
+            {/* Indian Cost Summary Box Component */}
             {resources.length > 0 && (
               <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-lg flex justify-between items-center">
                 <div>
-                  <h4 className="text-gray-800 font-bold">Total Resource Cost</h4>
+                  <h4 className="text-gray-800 font-bold">Total Allocation Budget</h4>
                   <p className="text-gray-500 text-xs mt-1">
-                    Preliminary budget breakdown calculated dynamically.
+                    Calculated automatically in Indian Rupees (INR) across all active allocations.
                   </p>
                 </div>
-                <span className="text-3xl font-black text-indigo-600">${totalCost.toFixed(2)}</span>
+                <span className="text-2xl font-black text-indigo-600">{formatIndianCurrency(totalBudget)}</span>
               </div>
             )}
           </div>
