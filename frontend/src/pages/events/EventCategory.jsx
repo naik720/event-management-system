@@ -16,37 +16,37 @@ function EventCategory() {
       name: "Wedding",
       icon: Heart,
       description: "Ceremonies, receptions, and celebrations.",
-      color: "from-pink-500 to-rose-500",
+      accentColor: "#ea580c",
     },
     {
       name: "Birthday Party",
       icon: Users,
       description: "Birthdays, reunions, and parties.",
-      color: "from-purple-500 to-pink-500",
+      accentColor: "#ea580c",
     },
     {
       name: "Corporate Event",
       icon: Briefcase,
       description: "Conferences, seminars, and networking.",
-      color: "from-blue-500 to-cyan-500",
+      accentColor: "#ea580c",
     },
     {
       name: "Conference",
       icon: Mic,
       description: "Professional conferences and seminars.",
-      color: "from-indigo-500 to-blue-500",
+      accentColor: "#ea580c",
     },
     {
       name: "Concert",
       icon: Music,
       description: "Live music performances and shows.",
-      color: "from-orange-500 to-red-500",
+      accentColor: "#ea580c",
     },
     {
       name: "Exhibition",
       icon: Image,
       description: "Art shows and exhibitions.",
-      color: "from-green-500 to-teal-500",
+      accentColor: "#ea580c",
     },
   ];
 
@@ -74,49 +74,49 @@ function EventCategory() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gray-100 py-12 px-4 animate-fade-in">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+            <div className="w-12 h-12 bg-[#ea580c] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm">
               1
             </div>
-            <h1 className="text-4xl font-bold text-white">Select Event Category</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Select Event Category</h1>
           </div>
-          <p className="text-gray-300 text-lg">
+          <p className="text-gray-600 text-lg">
             Choose a category to help us tailor your event creation experience.
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 font-medium">
+            ⚠️ {error}
           </div>
         )}
 
         {/* Event Title Input */}
-        <div className="mb-8 bg-slate-800/50 backdrop-blur p-6 rounded-lg border border-slate-700">
-          <label className="block text-white font-semibold mb-2">Event Title *</label>
+        <div className="mb-6 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <label className="block text-gray-700 font-semibold mb-2">Event Title *</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter your event title..."
-            className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition"
+            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] transition"
           />
         </div>
 
         {/* Event Description Input */}
-        <div className="mb-8 bg-slate-800/50 backdrop-blur p-6 rounded-lg border border-slate-700">
-          <label className="block text-white font-semibold mb-2">Event Description</label>
+        <div className="mb-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <label className="block text-gray-700 font-semibold mb-2">Event Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your event..."
             rows="3"
-            className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition"
+            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] transition"
           />
         </div>
 
@@ -129,25 +129,22 @@ function EventCategory() {
               <div
                 key={category.name}
                 onClick={() => setSelectedCategory(category.name)}
-                className={`p-6 rounded-lg border-2 cursor-pointer transition-all transform hover:scale-105 ${
-                  isSelected
-                    ? `border-purple-500 bg-gradient-to-br ${category.color} shadow-lg shadow-purple-500/50`
-                    : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
-                }`}
+                className={`p-6 rounded-lg border cursor-pointer transition-all transform hover:scale-[1.02] ${isSelected
+                    ? "border-[#ea580c] bg-orange-50/40 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div
-                    className={`p-3 rounded-lg ${isSelected ? "bg-white/20" : "bg-slate-700"}`}
+                    className={`p-3 rounded-lg ${isSelected ? "bg-[#ea580c] text-white" : "bg-gray-100 text-[#ea580c]"}`}
                   >
-                    <Icon
-                      className={`w-6 h-6 ${isSelected ? "text-white" : "text-purple-400"}`}
-                    />
+                    <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className={`font-semibold text-lg ${isSelected ? "text-white" : "text-white"}`}>
+                  <h3 className="font-bold text-lg text-gray-800">
                     {category.name}
                   </h3>
                 </div>
-                <p className={`text-sm ${isSelected ? "text-white/80" : "text-gray-400"}`}>
+                <p className={`text-sm ${isSelected ? "text-gray-700" : "text-gray-500"}`}>
                   {category.description}
                 </p>
               </div>
@@ -159,14 +156,14 @@ function EventCategory() {
         <div className="flex justify-center gap-4">
           <button
             onClick={() => navigate("/")}
-            className="px-8 py-3 rounded-lg border border-slate-600 text-white hover:bg-slate-700/50 transition"
+            className="px-8 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={handleCreateEvent}
             disabled={loading}
-            className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition disabled:opacity-50 flex items-center gap-2"
+            className="px-8 py-3 rounded-lg bg-[#ea580c] hover:bg-[#d97706] text-white font-semibold shadow-sm transition disabled:opacity-50 flex items-center gap-2"
           >
             {loading ? "Creating..." : "Next Step"}
             <ArrowRight className="w-5 h-5" />
@@ -174,11 +171,11 @@ function EventCategory() {
         </div>
 
         {/* Feature Highlight */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
-          <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <span className="text-purple-400">💡</span> Pro Tip
+        <div className="mt-12 p-6 bg-orange-50 border border-orange-100 rounded-lg">
+          <h4 className="text-gray-800 font-semibold mb-2 flex items-center gap-2">
+            <span className="text-[#ea580c]">💡</span> Pro Tip
           </h4>
-          <p className="text-gray-300">
+          <p className="text-gray-600 text-sm">
             Your event details automatically sync with all team members and resource managers across your
             organization.
           </p>

@@ -87,15 +87,17 @@ function EventManagementDashboard() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* --- Sidebar Navigation Framework --- */}
-      <div className="w-64 bg-gradient-to-b from-indigo-900 to-indigo-800 text-white p-6 flex flex-col overflow-y-auto">
+      <div className="w-64 bg-[#1e2640] text-[#9aa4b7] p-6 flex flex-col overflow-y-auto border-r border-[#151b30]">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">EventSync Pro</h1>
-          <p className="text-indigo-200 text-sm">Enterprise Plan</p>
+          <h1 className="text-2xl font-bold mb-1 text-white">
+            <span className="text-[#f59e0b]">EMS</span>
+          </h1>
+          <p className="text-[#64748b] text-xs font-semibold uppercase tracking-wider">Event Management</p>
         </div>
 
         <button
           onClick={handleCreateNewEvent}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg mb-8 flex items-center justify-center gap-2 transition"
+          className="w-full bg-[#ea580c] hover:bg-[#d97706] text-white font-semibold py-3 px-4 rounded-lg mb-8 flex items-center justify-center gap-2 transition shadow-sm"
         >
           <Plus size={20} />
           Create Event
@@ -114,8 +116,8 @@ function EventManagementDashboard() {
               to={`/user/event-management/${item.path}`}
               className={({ isActive }) =>
                 `w-full flex items-center px-4 py-3 rounded-lg transition ${isActive || (item.path === "dashboard" && isBaseDashboard)
-                  ? "bg-indigo-600 font-semibold text-white"
-                  : "hover:bg-indigo-700 text-indigo-100"
+                  ? "bg-[#ea580c] font-semibold text-white"
+                  : "hover:bg-[#252f4c] text-[#9aa4b7] hover:text-white"
                 }`
               }
             >
@@ -125,14 +127,14 @@ function EventManagementDashboard() {
           ))}
         </nav>
 
-        <div className="space-y-2 pt-4 border-t border-indigo-700">
-          <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-indigo-100 flex items-center gap-2">
+        <div className="space-y-2 pt-4 border-t border-[#151b30]">
+          <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2">
             <HelpCircle size={18} />
             Help Center
           </button>
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-indigo-100 flex items-center gap-2"
+            className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2"
           >
             <LogOut size={18} />
             Log Out
@@ -156,7 +158,7 @@ function EventManagementDashboard() {
             </button>
             <button
               onClick={handleCreateNewEvent}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
+              className="px-6 py-2 bg-[#ea580c] hover:bg-[#d97706] text-white rounded-lg transition font-semibold shadow-sm"
             >
               + New Event
             </button>
@@ -181,7 +183,7 @@ function EventManagementDashboard() {
 }
 
 /* ==========================================================================
-   Secondary Sub-Component: Base Dashboard Metrics and Reports Visuals
+    Secondary Sub-Component: Base Dashboard Metrics and Reports Visuals
    ========================================================================== */
 function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
   const revenueData = [
@@ -200,9 +202,9 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
     <div className="p-8 animate-fade-in">
       {/* Metric Cards Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#3b82f6]">
           <div className="flex justify-between items-start mb-4">
-            <Calendar className="text-indigo-500" size={32} />
+            <Calendar className="text-[#3b82f6]" size={32} />
             <span className="text-green-500 font-semibold text-sm">+12%</span>
           </div>
           <p className="text-gray-600 font-semibold text-sm mb-1">Upcoming Events</p>
@@ -210,9 +212,9 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           <p className="text-gray-500 text-xs mt-2">14 scheduled this month</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#8b5cf6]">
           <div className="flex justify-between items-start mb-4">
-            <Clock className="text-blue-500" size={32} />
+            <Clock className="text-[#8b5cf6]" size={32} />
             <span className="text-blue-500 font-semibold text-sm">Steady</span>
           </div>
           <p className="text-gray-600 font-semibold text-sm mb-1">Ongoing Today</p>
@@ -222,22 +224,22 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           <p className="text-gray-500 text-xs mt-2">Across 4 regions</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#10b981]">
           <div className="flex justify-between items-start mb-4">
-            <Users className="text-green-500" size={32} />
+            <Users className="text-[#10b981]" size={32} />
             <span className="text-gray-600 text-sm">85% of target met</span>
           </div>
           <p className="text-gray-600 font-semibold text-sm mb-1">Completed YTD</p>
           <p className="text-3xl font-bold text-gray-800">{completedEvents}</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#f59e0b]">
           <div className="flex justify-between items-start mb-4">
-            <TrendingUp className="text-yellow-500" size={32} />
+            <TrendingUp className="text-[#f59e0b]" size={32} />
           </div>
           <p className="text-gray-600 font-semibold text-sm mb-1">Avg. Client Rating</p>
           <p className="text-3xl font-bold text-gray-800">4.92</p>
-          <div className="flex text-yellow-500 text-sm mt-2">★★★★★</div>
+          <div className="text-yellow-500 text-sm mt-2">★★★★★</div>
         </div>
       </div>
 
@@ -253,25 +255,25 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           </div>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} />
               <Tooltip />
-              <Bar dataKey="revenue" fill="#4F46E5" />
+              <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-lg p-6 shadow-sm text-white">
-          <h3 className="text-lg font-bold mb-4">Quick Insight</h3>
-          <div className="space-y-4">
-            <p className="text-sm text-indigo-100">
+        <div className="bg-gradient-to-br from-[#1e2640] to-[#151b30] border border-[#151b30] rounded-lg p-6 shadow-sm text-white flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-[#f59e0b]">Quick Insight</h3>
+            <p className="text-sm text-[#9aa4b7]">
               💡 Ticket sales for "TechSummit 2026" are 22% higher than last year's average at this stage. Consider releasing the Early Bird phase-2 tickets earlier.
             </p>
-            <button className="w-full mt-4 bg-white text-indigo-600 font-semibold py-2 rounded-lg hover:bg-indigo-50 transition">
-              View Sales Report
-            </button>
           </div>
+          <button className="w-full mt-6 bg-[#ea580c] text-white font-semibold py-2 rounded-lg hover:bg-[#d97706] transition shadow-sm">
+            View Sales Report
+          </button>
         </div>
       </div>
 
@@ -281,7 +283,7 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           <h3 className="text-lg font-bold text-gray-800">Current Portfolio</h3>
           <button
             onClick={() => navigate("/user/dashboard")}
-            className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm"
+            className="text-[#ea580c] hover:text-[#d97706] font-semibold text-sm"
           >
             View All
           </button>
@@ -323,7 +325,7 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
                   <td className="py-4 px-4">
                     <button
                       onClick={() => navigate(`/user/event-dashboard/${event._id}`)}
-                      className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm flex items-center gap-1"
+                      className="text-[#ea580c] hover:text-[#d97706] font-semibold text-sm flex items-center gap-1"
                     >
                       <Eye size={16} />
                       View
@@ -340,7 +342,7 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
               <p className="text-gray-600">No events created yet</p>
               <button
                 onClick={handleCreateNewEvent}
-                className="text-indigo-600 hover:text-indigo-700 font-semibold mt-2"
+                className="text-[#ea580c] hover:text-[#d97706] font-semibold mt-2"
               >
                 Create your first event
               </button>
