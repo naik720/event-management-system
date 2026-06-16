@@ -39,16 +39,45 @@ import CalendarPage from "./pages/events/CalendarPage";
 // Route Guard Components
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute";
 
+function getAuthRole() {
+  return localStorage.getItem("userRole") || "client";
+}
+
 // Smart Protected Route Guard for Users
 function UserProtectedRoute({ children }) {
   const loggedInUser = localStorage.getItem("loggedInUser");
   const token = localStorage.getItem("token");
+  const role = getAuthRole();
   const location = useLocation();
 
   if (!loggedInUser || !token) {
     if (location.pathname.startsWith("/user/event-management")) {
       return <Navigate to="/login?from=event-management" replace />;
     }
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role === "vendor" && !location.pathname.startsWith("/vendor")) {
+    return <Navigate to="/vendor/dashboard" replace />;
+  }
+
+  if (role === "staff" && !location.pathname.startsWith("/staff")) {
+    return <Navigate to="/staff/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function RoleProtectedRoute({ allowedRoles, children }) {
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  const token = localStorage.getItem("token");
+  const role = getAuthRole();
+
+  if (!loggedInUser || !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
@@ -64,8 +93,22 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/staff/dashboard" element={<StaffDashboard />} />
-      <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+      <Route
+        path="/staff/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={["staff"]}>
+            <StaffDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={["vendor"]}>
+            <VendorDashboard />
+          </RoleProtectedRoute>
+        }
+      />
 
       {/* --- General User Dashboard Routes --- */}
       <Route

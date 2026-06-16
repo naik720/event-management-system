@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin } from "lucide-react";
+import { DEFAULT_EVENT_IMAGE, handleImageError } from "./imageFallback";
 
 const EventCard = ({ id, image, title, date, location, compact = false, tag }) => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const EventCard = ({ id, image, title, date, location, compact = false, tag }) =
   };
   return (
     <div className={compact ? "event-card event-card-compact" : "event-card"}>
-      <img src={image} alt={title} />
+      <img src={image || DEFAULT_EVENT_IMAGE} alt={title} onError={handleImageError} />
 
       <div className="event-card-content">
         <div>

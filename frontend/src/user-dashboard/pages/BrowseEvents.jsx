@@ -1,6 +1,7 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../styles/components/Sidebar";
+import { DEFAULT_EVENT_IMAGE, handleImageError } from "../styles/components/imageFallback";
 import "../styles/dashboard.css";
 import "./BrowseEvents.css";
 
@@ -146,7 +147,7 @@ export default function BrowseEvents() {
           <div className="event-grid">
             {filteredEvents.map((event) => (
               <div className="event-card" key={event.id}>
-                <img src={event.image} alt={event.title} />
+                <img src={event.image || DEFAULT_EVENT_IMAGE} alt={event.title} onError={handleImageError} />
                 <div className="event-card-body">
                   <div className="event-card-header">
                     <div>

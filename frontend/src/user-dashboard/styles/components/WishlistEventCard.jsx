@@ -1,5 +1,6 @@
 import React from "react";
 import { CalendarDays, Clock, Heart, MapPin, Trash2 } from "lucide-react";
+import { DEFAULT_EVENT_IMAGE, handleImageError } from "./imageFallback";
 
 const getDateParts = (dateText) => {
   const [month = "", day = ""] = dateText.split(" ");
@@ -15,7 +16,7 @@ const WishlistEventCard = ({ event, onRemove, onView }) => {
   return (
     <article className="wishlist-event-card">
       <div className="wishlist-image-wrap">
-        <img src={event.image} alt={event.title} />
+        <img src={event.image || DEFAULT_EVENT_IMAGE} alt={event.title} onError={handleImageError} />
         <button
           type="button"
           className="wishlist-heart"

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -79,9 +80,18 @@ const sidebarItems = [
 ];
 
 export default function StaffDashboard() {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const completedSweep = (taskProgress.completed / taskProgress.total) * 360;
   const pendingSweep = ((taskProgress.completed + taskProgress.pending) / taskProgress.total) * 360;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -148,6 +158,7 @@ export default function StaffDashboard() {
             <div className="px-3 pb-4">
               <button
                 type="button"
+                onClick={handleLogout}
                 className="flex w-full items-center gap-3 rounded-2xl bg-white/8 px-4 py-3 text-left text-sm font-semibold text-orange-300 transition hover:bg-white/10"
               >
                 <LogOut size={18} />

@@ -12,6 +12,7 @@ import StatsCard from "../styles/components/StatsCard";
 import EventCard from "../styles/components/EventCard";
 import QuickActions from "../styles/components/QuickActions";
 import BookingCard from "../styles/components/BookingCard";
+import { DEFAULT_EVENT_IMAGE } from "../styles/components/imageFallback";
 import { getClientDisplayName, getCurrentClient } from "../services/clientSession";
 import { getBookings } from "../services/userApi";
 
@@ -50,6 +51,29 @@ const Dashboard = () => {
     () => bookings.filter((b) => b.status === "Approved").slice(0, 3),
     [bookings]
   );
+
+  const bookingImageFor = (booking, index = 0) => {
+    if (booking?.image) return booking.image;
+
+    const imageMap = {
+      wedding: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
+      birthday: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+      corporate: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+      conference: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+      concert: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=800&q=80",
+      exhibition: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=800&q=80",
+    };
+
+    const eventType = (booking?.eventType || booking?.eventTitle || "").toLowerCase();
+    const matchedImage = Object.entries(imageMap).find(([key]) => eventType.includes(key));
+    if (matchedImage) return matchedImage[1];
+
+    return [
+      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+    ][index % 3];
+  };
 
   const recentBookings = useMemo(
     () => bookings.slice(0, 3),
@@ -113,7 +137,7 @@ const Dashboard = () => {
                 upcomingEvents.map((event) => (
                   <EventCard
                     key={event._id || event.eventTitle}
-                    image={event.image}
+                    image={event.image || bookingImageFor(event)}
                     title={event.eventTitle}
                     date={event.eventDate}
                     location={event.location}
@@ -132,10 +156,10 @@ const Dashboard = () => {
 
             <div className="vertical-list">
               {recentBookings.length > 0 ? (
-                recentBookings.map((booking) => (
+                recentBookings.map((booking, index) => (
                   <BookingCard
                     key={booking._id || booking.eventTitle}
-                    image={booking.image}
+                    image={booking.image || bookingImageFor(booking, index)}
                     title={booking.eventTitle}
                     date={booking.eventDate}
                     location={booking.location}
@@ -153,7 +177,7 @@ const Dashboard = () => {
 
             <div className="recommendation-grid">
               {recommendedEvents.map((event) => (
-                <EventCard key={event.title} {...event} />
+                <EventCard key={event.title} {...event} image={event.image || DEFAULT_EVENT_IMAGE} />
               ))}
             </div>
           </section>

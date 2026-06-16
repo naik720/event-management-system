@@ -4,6 +4,19 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 import { saveClientProfile } from "../user-dashboard/services/clientSession";
 
+const DEMO_ACCOUNTS = {
+  vendor: {
+    email: "vendor@gmail.com",
+    password: "vedoor@123",
+    route: "/vendor/dashboard",
+  },
+  staff: {
+    email: "staff@gmail.com",
+    password: "staff@123",
+    route: "/staff/dashboard",
+  },
+};
+
 function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -43,12 +56,41 @@ function Login() {
     setError("");
 
     try {
+      const enteredEmail = formData.email.trim().toLowerCase();
+      const enteredPassword = formData.password;
+      const demoAccount = Object.entries(DEMO_ACCOUNTS).find(([, account]) => {
+        return account.email === enteredEmail && account.password === enteredPassword;
+      });
+
+      if (demoAccount) {
+        const [role, account] = demoAccount;
+        const loginTime = new Date().toISOString();
+        const demoUser = {
+          email: account.email,
+          role,
+          name: role === "vendor" ? "Vendor Account" : "Staff Account",
+          lastLogin: loginTime,
+          memberSince: loginTime,
+        };
+
+        localStorage.setItem("token", `demo-${role}-token`);
+        localStorage.setItem("loggedInUser", JSON.stringify(demoUser));
+        localStorage.setItem("user", JSON.stringify(demoUser));
+        localStorage.setItem("userRole", role);
+
+        setTimeout(() => {
+          navigate(account.route);
+        }, 100);
+
+        return;
+      }
+
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
+          email: enteredEmail,
+          password: enteredPassword,
         }),
       });
 
@@ -65,6 +107,7 @@ function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
         localStorage.setItem("user", JSON.stringify(updatedUser));
+        localStorage.setItem("userRole", data.user.role || "client");
         saveClientProfile(updatedUser);
 
         // 🚀 Redirect securely to the correct dashboard routes
@@ -107,6 +150,7 @@ function Login() {
           localStorage.setItem("user", JSON.stringify(updatedUser));
           localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
           if (data.token) localStorage.setItem("token", data.token);
+          localStorage.setItem("userRole", data.user.role || "client");
           saveClientProfile(updatedUser);
 
           // 🚀 Redirect securely to the correct dashboard routes (Google Login)
@@ -213,6 +257,16 @@ function Login() {
               </span>
             </div>
           </form>
+
+          <div className="mt-6 rounded-2xl border border-white/15 bg-black/20 p-4 text-sm text-gray-200">
+            <p className="font-semibold text-white">Demo access</p>
+            <p className="mt-1">
+              Vendor: <span className="font-mono">vendor@gmail.com / vedoor@123</span>
+            </p>
+            <p className="mt-1">
+              Staff: <span className="font-mono">staff@gmail.com / staff@123</span>
+            </p>
+          </div>
         </div>
       </div>
     </main>
