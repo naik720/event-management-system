@@ -37,6 +37,14 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    amount: {
+      type: Number,
+      default: 0,
+    },
+    taxRate: {
+      type: Number,
+      default: 18,
+    },
     location: {
       type: String,
       required: true,

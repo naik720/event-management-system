@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -21,7 +22,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import Sidebar from "../styles/components/Sidebar";
 import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
-import { getBookings } from "../services/userApi";
+import { createInvoice, getBookings, getInvoicePdfUrl, getUserBilling } from "../services/userApi";
 import "../styles/dashboard.css";
 
 const fallbackBookings = [
@@ -98,6 +99,7 @@ const bookingStatusColors = {
 };
 
 const MyBookings = () => {
+  const navigate = useNavigate();
   const currentClient = getCurrentClient();
   const clientName = getClientDisplayName(currentClient);
   const clientPhoto = getClientPhoto(currentClient);
@@ -106,6 +108,8 @@ const MyBookings = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBookingForDetail, setSelectedBookingForDetail] = useState(null);
+  const [billingInvoices, setBillingInvoices] = useState([]);
+  const [billingMessage, setBillingMessage] = useState("");
   const userId = currentClient.id || currentClient._id || currentClient.userId || "";
 
   useEffect(() => {
@@ -114,6 +118,38 @@ const MyBookings = () => {
       .catch(() => setBookings(fallbackBookings))
       .finally(() => setIsLoading(false));
   }, [userId]);
+
+  useEffect(() => {
+    getUserBilling(userId || "guest")
+      .then((data) => setBillingInvoices(data.invoices || []))
+      .catch(() => setBillingInvoices([]));
+  }, [userId]);
+
+  const getInvoiceForBooking = (booking) => {
+    const bookingId = booking?._id || booking?.id;
+    return billingInvoices.find((invoice) => String(invoice.bookingId) === String(bookingId));
+  };
+
+  const formatINR = (value) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(Number(value) || 0);
+
+  const handleProceedToPayment = async (booking) => {
+    try {
+      setBillingMessage("");
+      let invoice = getInvoiceForBooking(booking);
+      if (!invoice) {
+        invoice = await createInvoice(booking._id || booking.id, booking.amount);
+        setBillingInvoices((current) => [invoice, ...current]);
+      }
+      navigate(`/client/payments?invoice=${invoice._id}`);
+    } catch {
+      setBillingMessage("Unable to generate invoice for this booking right now.");
+    }
+  };
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
@@ -273,8 +309,8 @@ const MyBookings = () => {
                   </div>
 
                   <div className="booking-amount">
-                    <p>Guest Count</p>
-                    <strong>{booking.guests || "—"}</strong>
+                    <p>{getInvoiceForBooking(booking) ? "Invoice Total" : "Guest Count"}</p>
+                    <strong>{getInvoiceForBooking(booking) ? formatINR(getInvoiceForBooking(booking).totalAmount) : booking.guests || "—"}</strong>
                   </div>
 
                   <div className="booking-row-actions">
@@ -306,6 +342,7 @@ const MyBookings = () => {
                 </div>
 
                 <div className="p-6 space-y-6">
+                  {billingMessage && <p className="profile-save-message">{billingMessage}</p>}
                   <img
                     src={selectedBookingForDetail.image || "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80"}
                     alt={selectedBookingForDetail.eventTitle}
@@ -367,6 +404,18 @@ const MyBookings = () => {
                     <p className="text-lg font-mono font-semibold text-slate-900 mt-2">{selectedBookingForDetail.id || selectedBookingForDetail._id}</p>
                   </div>
 
+                  {getInvoiceForBooking(selectedBookingForDetail) && (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                      <p className="text-xs uppercase tracking-widest text-emerald-600">Invoice</p>
+                      <p className="mt-2 text-lg font-semibold text-slate-900">
+                        {getInvoiceForBooking(selectedBookingForDetail).invoiceNumber}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {formatINR(getInvoiceForBooking(selectedBookingForDetail).totalAmount)} · {getInvoiceForBooking(selectedBookingForDetail).status}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
@@ -379,8 +428,18 @@ const MyBookings = () => {
                       <button
                         type="button"
                         className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 transition"
+                        onClick={() => handleProceedToPayment(selectedBookingForDetail)}
                       >
-                        Proceed to Payment
+                        {getInvoiceForBooking(selectedBookingForDetail)?.status === "Paid" ? "View Payment" : "Proceed to Payment"}
+                      </button>
+                    )}
+                    {getInvoiceForBooking(selectedBookingForDetail) && (
+                      <button
+                        type="button"
+                        className="flex-1 rounded-2xl border border-slate-300 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-50 transition"
+                        onClick={() => window.open(getInvoicePdfUrl(getInvoiceForBooking(selectedBookingForDetail)._id), "_blank")}
+                      >
+                        Download Invoice
                       </button>
                     )}
                   </div>

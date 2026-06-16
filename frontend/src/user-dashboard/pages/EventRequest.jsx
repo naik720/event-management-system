@@ -75,6 +75,8 @@ const EventRequest = () => {
       eventType: formData.eventType,
       eventDate: formData.date,
       guests: Number(formData.guests),
+      amount: Number(selectedVenue?.price) || 0,
+      taxRate: 18,
       location: formData.location,
       notes: formData.notes,
       status: "Pending",

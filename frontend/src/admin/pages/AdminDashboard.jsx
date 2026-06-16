@@ -47,7 +47,7 @@ import MaintenanceRecords from "../venue-management/pages/MaintenanceRecords";
 import SeatingArrangements from "../venue-management/pages/SeatingArrangements";
 import VenueDetails from "../venue-management/pages/VenueDetails";
 import AvailabilityCalendar from "../venue-management/pages/AvailabilityCalendar";
-import AddVendor from "../vendor-management/pages/AddVendor";
+import BillingDashboard from "../venue-management/pages/BillingDashboard";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -162,6 +162,7 @@ function AdminDashboard() {
     { key: "seating-layout", label: "Seating Arrangements" },
     { key: "maintenance", label: "Maintenance Records" },
     { key: "venue-revenue", label: "Venue Revenue" },
+    { key: "billing", label: "Billing Dashboard" },
   ];
 
   const getVendorInitials = (name) =>
@@ -243,20 +244,20 @@ function AdminDashboard() {
         current.map((member) =>
           member.id === editingStaffId
             ? {
-                ...member,
-                name: newStaffMember.name.trim(),
-                email: newStaffMember.email.trim(),
-                phone: newStaffMember.phone.trim(),
-                password: newStaffMember.password.trim() || member.password || "",
-                role: newStaffMember.role,
-                status: newStaffMember.status,
-                initials: newStaffMember.name
-                  .split(" ")
-                  .map((word) => word[0] || "")
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2),
-              }
+              ...member,
+              name: newStaffMember.name.trim(),
+              email: newStaffMember.email.trim(),
+              phone: newStaffMember.phone.trim(),
+              password: newStaffMember.password.trim() || member.password || "",
+              role: newStaffMember.role,
+              status: newStaffMember.status,
+              initials: newStaffMember.name
+                .split(" ")
+                .map((word) => word[0] || "")
+                .join("")
+                .toUpperCase()
+                .slice(0, 2),
+            }
             : member
         )
       );
@@ -410,34 +411,32 @@ function AdminDashboard() {
     "/admin/venue-management/seating-layout": "Seating Arrangements",
     "/admin/venue-management/maintenance": "Maintenance Records",
     "/admin/venue-management/venue-revenue": "Venue Revenue",
-    "/admin/vendor-management/overview": "Vendor Management",
-    "/admin/vendor-management/add-vendor": "Add Vendor",
+    "/admin/venue-management/billing": "Billing Dashboard",
   };
 
   const pageTitle = location.pathname.startsWith("/admin/venue-management") || location.pathname.startsWith("/admin/vendor-management")
     ? routeTitles[location.pathname] || (location.pathname.startsWith("/admin/vendor-management") ? "Vendor Management" : "Venue Management")
     : activeTab === "events"
-    ? "Manage Events"
-    : activeTab === "clients"
-    ? "Manage Clients"
-    : activeTab === "staff"
-    ? "Staff & Vendors Management"
-    : activeTab === "bookings"
-    ? "Bookings Dashboard"
-    : activeTab === "payments"
-    ? "Payment Ledger"
-    : activeTab === "reports"
-    ? "Reports"
-    : activeTab === "settings"
-    ? "System Settings"
-    : "Dashboard Overview";
+      ? "Manage Events"
+      : activeTab === "clients"
+        ? "Manage Clients"
+        : activeTab === "staff"
+          ? "Staff & Vendors Management"
+          : activeTab === "bookings"
+            ? "Bookings Dashboard"
+            : activeTab === "payments"
+              ? "Payment Ledger"
+              : activeTab === "reports"
+                ? "Reports"
+                : activeTab === "settings"
+                  ? "System Settings"
+                  : "Dashboard Overview";
 
   return (
     <div className="flex h-screen bg-gray-100">
       <div
-        className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col overflow-hidden`}
+        className={`${sidebarOpen ? "w-64" : "w-20"
+          } bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col overflow-hidden`}
       >
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           {sidebarOpen && (
@@ -470,11 +469,10 @@ function AdminDashboard() {
                       setStaffSubTab("staff-management");
                       navigate("/admin/dashboard");
                     }}
-                    className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                      activeTab === "staff" && !location.pathname.startsWith("/admin/venue-management")
-                        ? "bg-amber-600 text-white"
-                        : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                    }`}
+                    className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "staff" && !location.pathname.startsWith("/admin/venue-management")
+                      ? "bg-amber-600 text-white"
+                      : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
                   >
                     <div className="flex items-center space-x-3">
                       <item.icon size={20} />
@@ -490,11 +488,10 @@ function AdminDashboard() {
                           setStaffSubTab("staff-management");
                           navigate("/admin/dashboard");
                         }}
-                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                          staffSubTab === "staff-management"
-                            ? "bg-gray-700 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                        }`}
+                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${staffSubTab === "staff-management"
+                          ? "bg-gray-700 text-white"
+                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          }`}
                       >
                         Staff Management
                       </button>
@@ -506,11 +503,10 @@ function AdminDashboard() {
                           setVendorEditingId(null);
                           navigate("/admin/vendor-management/overview");
                         }}
-                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                          location.pathname.startsWith("/admin/vendor-management") || staffSubTab === "vendor-management"
-                            ? "bg-gray-700 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                        }`}
+                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname.startsWith("/admin/vendor-management") || staffSubTab === "vendor-management"
+                          ? "bg-gray-700 text-white"
+                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          }`}
                       >
                         Vendor Management
                       </button>
@@ -524,11 +520,10 @@ function AdminDashboard() {
                     setActiveTab(item.id);
                     navigate("/admin/dashboard");
                   }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
-                      ? "bg-amber-600 text-white"
-                      : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                    ? "bg-amber-600 text-white"
+                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                    }`}
                 >
                   <item.icon size={20} />
                   {sidebarOpen && <span>{item.label}</span>}
@@ -544,11 +539,10 @@ function AdminDashboard() {
                 setVenueOpen((v) => !v);
                 navigate("/admin/venue-management/overview");
               }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                location.pathname.startsWith("/admin/venue-management")
-                  ? "bg-amber-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname.startsWith("/admin/venue-management")
+                ? "bg-amber-600 text-white"
+                : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
             >
               <Store size={20} />
               {sidebarOpen && <span>Venue Management</span>}
@@ -560,11 +554,10 @@ function AdminDashboard() {
                   <button
                     key={item.key}
                     onClick={() => navigate(`/admin/venue-management/${item.key}`)}
-                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                      location.pathname === `/admin/venue-management/${item.key}`
-                        ? "bg-gray-700 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`}
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname === `/admin/venue-management/${item.key}`
+                      ? "bg-gray-700 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -586,11 +579,10 @@ function AdminDashboard() {
                   setActiveTab(item.id);
                   navigate("/admin/dashboard");
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
-                    ? "bg-amber-600 text-white"
-                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                }`}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                  ? "bg-amber-600 text-white"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                  }`}
               >
                 <item.icon size={20} />
                 {sidebarOpen && <span>{item.label}</span>}
@@ -614,17 +606,17 @@ function AdminDashboard() {
         <div className="bg-white shadow-sm border-b border-gray-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-            {pageTitle}
-          </h2>
+              {pageTitle}
+            </h2>
             <p className="text-gray-500 text-sm">
               {location.pathname.startsWith("/admin/venue-management")
                 ? "Venue Management Module"
                 : new Date().toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -683,6 +675,8 @@ function AdminDashboard() {
             <SeatingArrangements />
           ) : location.pathname === "/admin/venue-management/venue-revenue" ? (
             <VenueDetails />
+          ) : location.pathname === "/admin/venue-management/billing" ? (
+            <BillingDashboard />
           ) : location.pathname.startsWith("/admin/venue-management") ? (
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-md p-6">
@@ -988,399 +982,394 @@ function AdminDashboard() {
             </div>
           ) : activeTab === "staff" ? (
             staffSubTab === "staff-management" ? (
-            <div className="space-y-6">
-              <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Staff Management</h3>
-                    <p className="text-sm text-gray-500 mt-1">Manage your organization staff members</p>
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Staff Management</h3>
+                      <p className="text-sm text-gray-500 mt-1">Manage your organization staff members</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setStaffSubTab("staff-management");
+                        setIsAddStaff(true);
+                        setEditingStaffId(null);
+                        setStaffErrors({});
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#5b2ceb] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-all"
+                    >
+                      <Plus size={16} />
+                      Add Staff
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setStaffSubTab("staff-management");
-                      setIsAddStaff(true);
-                      setEditingStaffId(null);
-                      setStaffErrors({});
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#5b2ceb] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-all"
-                  >
-                    <Plus size={16} />
-                    Add Staff
-                  </button>
-                </div>
 
-                {isAddStaff ? (
-                  <div className="grid gap-6 xl:grid-cols-3">
-                    <div className="xl:col-span-2 space-y-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900">{editingStaffId ? "Edit Staff" : "Add Staff"}</h3>
-                          <p className="text-sm text-gray-500">{editingStaffId ? "Update staff member information." : "Create a new staff member and assign their role."}</p>
+                  {isAddStaff ? (
+                    <div className="grid gap-6 xl:grid-cols-3">
+                      <div className="xl:col-span-2 space-y-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <h3 className="text-2xl font-bold text-gray-900">{editingStaffId ? "Edit Staff" : "Add Staff"}</h3>
+                            <p className="text-sm text-gray-500">{editingStaffId ? "Update staff member information." : "Create a new staff member and assign their role."}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setIsAddStaff(false);
+                              setEditingStaffId(null);
+                              setStaffErrors({});
+                              setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
+                            }}
+                            className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+                          >
+                            ← Back
+                          </button>
                         </div>
-                        <button
-                          onClick={() => {
-                            setIsAddStaff(false);
-                            setEditingStaffId(null);
-                            setStaffErrors({});
-                            setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
-                          }}
-                          className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
-                        >
-                          ← Back
-                        </button>
+
+                        <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-4">Add Staff Form</h4>
+                          <div className="grid gap-4 lg:grid-cols-2">
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Name <span className="text-red-500">*</span></label>
+                              <input
+                                type="text"
+                                required
+                                value={newStaffMember.name}
+                                onChange={(e) => {
+                                  setNewStaffMember((current) => ({ ...current, name: e.target.value }));
+                                  setStaffErrors((current) => ({ ...current, name: "" }));
+                                }}
+                                placeholder="Enter full name"
+                                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${staffErrors.name ? "border-red-400" : "border-gray-200"
+                                  }`}
+                              />
+                              {staffErrors.name && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.name}</p>}
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
+                              <input
+                                type="password"
+                                required={!editingStaffId}
+                                value={newStaffMember.password}
+                                onChange={(e) => {
+                                  setNewStaffMember((current) => ({ ...current, password: e.target.value }));
+                                  setStaffErrors((current) => ({ ...current, password: "" }));
+                                }}
+                                placeholder="Enter password"
+                                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${staffErrors.password ? "border-red-400" : "border-gray-200"
+                                  }`}
+                              />
+                              {staffErrors.password && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.password}</p>}
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
+                              <input
+                                type="email"
+                                required
+                                value={newStaffMember.email}
+                                onChange={(e) => {
+                                  setNewStaffMember((current) => ({ ...current, email: e.target.value }));
+                                  setStaffErrors((current) => ({ ...current, email: "" }));
+                                }}
+                                placeholder="Enter email address"
+                                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${staffErrors.email ? "border-red-400" : "border-gray-200"
+                                  }`}
+                              />
+                              {staffErrors.email && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.email}</p>}
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Status <span className="text-red-500">*</span></label>
+                              <select
+                                required
+                                value={newStaffMember.status}
+                                onChange={(e) => setNewStaffMember((current) => ({ ...current, status: e.target.value }))}
+                                className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
+                              >
+                                <option value="Active">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="On Duty">On Duty</option>
+                                <option value="On Leave">On Leave</option>
+                                <option value="Inactive">Inactive</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Phone <span className="text-red-500">*</span></label>
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                maxLength={10}
+                                required
+                                value={newStaffMember.phone}
+                                onChange={(e) => {
+                                  setNewStaffMember((current) => ({ ...current, phone: e.target.value }));
+                                  setStaffErrors((current) => ({ ...current, phone: "" }));
+                                }}
+                                placeholder="Enter phone number"
+                                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${staffErrors.phone ? "border-red-400" : "border-gray-200"
+                                  }`}
+                              />
+                              {staffErrors.phone && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.phone}</p>}
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-700">Role <span className="text-red-500">*</span></label>
+                              <select
+                                required
+                                value={newStaffMember.role}
+                                onChange={(e) => {
+                                  setNewStaffMember((current) => ({ ...current, role: e.target.value }));
+                                }}
+                                className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
+                              >
+                                <option value="Event Manager">Select Role</option>
+                                <option value="Event Manager">Event Manager</option>
+                                <option value="Coordinator">Coordinator</option>
+                                <option value="Security Staff">Security Staff</option>
+                                <option value="Catering Staff">Catering Staff</option>
+                                <option value="Decorator">Decorator</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsAddStaff(false);
+                              setEditingStaffId(null);
+                              setStaffErrors({});
+                              setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
+                            }}
+                            className="rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleStaffSave}
+                            className="rounded-full bg-[#5b2ceb] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-colors"
+                          >
+                            {editingStaffId ? "Update Staff" : "Save Staff"}
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Add Staff Form</h4>
-                        <div className="grid gap-4 lg:grid-cols-2">
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Name <span className="text-red-500">*</span></label>
-                            <input
-                              type="text"
-                              required
-                              value={newStaffMember.name}
-                              onChange={(e) => {
-                                setNewStaffMember((current) => ({ ...current, name: e.target.value }));
-                                setStaffErrors((current) => ({ ...current, name: "" }));
-                              }}
-                              placeholder="Enter full name"
-                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
-                                staffErrors.name ? "border-red-400" : "border-gray-200"
-                              }`}
-                            />
-                            {staffErrors.name && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.name}</p>}
+                      <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6 shadow-sm">
+                        <div className="mb-6">
+                          <h3 className="text-lg font-bold text-gray-900">Staff Roles Information</h3>
+                          <p className="text-sm text-gray-500">Quick reference to staff roles and responsibilities.</p>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef2ff] text-[#5b2ceb]">
+                              <Briefcase size={20} />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">Event Manager</p>
+                              <p className="text-sm text-gray-500">Manage overall event planning and execution.</p>
+                            </div>
                           </div>
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
-                            <input
-                              type="password"
-                              required={!editingStaffId}
-                              value={newStaffMember.password}
-                              onChange={(e) => {
-                                setNewStaffMember((current) => ({ ...current, password: e.target.value }));
-                                setStaffErrors((current) => ({ ...current, password: "" }));
-                              }}
-                              placeholder="Enter password"
-                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
-                                staffErrors.password ? "border-red-400" : "border-gray-200"
-                              }`}
-                            />
-                            {staffErrors.password && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.password}</p>}
+
+                          <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ecfdf5] text-[#10b981]">
+                              <Users size={20} />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">Coordinator</p>
+                              <p className="text-sm text-gray-500">Coordinate between teams and manage schedules.</p>
+                            </div>
                           </div>
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
-                            <input
-                              type="email"
-                              required
-                              value={newStaffMember.email}
-                              onChange={(e) => {
-                                setNewStaffMember((current) => ({ ...current, email: e.target.value }));
-                                setStaffErrors((current) => ({ ...current, email: "" }));
-                              }}
-                              placeholder="Enter email address"
-                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
-                                staffErrors.email ? "border-red-400" : "border-gray-200"
-                              }`}
-                            />
-                            {staffErrors.email && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.email}</p>}
+
+                          <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6ff] text-[#2563eb]">
+                              <ShieldCheck size={20} />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">Security Staff</p>
+                              <p className="text-sm text-gray-500">Ensure event security and safety.</p>
+                            </div>
                           </div>
+
+                          <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff7ed] text-[#f97316]">
+                              <Coffee size={20} />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">Catering Staff</p>
+                              <p className="text-sm text-gray-500">Handle catering and food arrangements.</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fce7f3] text-[#d946ef]">
+                              <Sparkles size={20} />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">Decorator</p>
+                              <p className="text-sm text-gray-500">Manage decoration and venue setup.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                          <p className="text-sm font-medium text-gray-500">Total Staff</p>
+                          <p className="mt-4 text-3xl font-bold text-gray-900">{staffMembers.length}</p>
+                          <p className="text-xs text-gray-400 mt-2">All Staff Members</p>
+                        </div>
+                        <div className="rounded-3xl border border-gray-200 bg-emerald-50 p-6 shadow-sm">
+                          <p className="text-sm font-medium text-emerald-700">Active Staff</p>
+                          <p className="mt-4 text-3xl font-bold text-emerald-900">{staffMembers.filter((member) => member.status === "Active").length}</p>
+                          <p className="text-xs text-emerald-600 mt-2">Currently Active</p>
+                        </div>
+                        <div className="rounded-3xl border border-gray-200 bg-sky-50 p-6 shadow-sm">
+                          <p className="text-sm font-medium text-sky-700">On Duty</p>
+                          <p className="mt-4 text-3xl font-bold text-sky-900">{staffMembers.filter((member) => member.status === "On Duty").length}</p>
+                          <p className="text-xs text-sky-600 mt-2">Currently On Duty</p>
+                        </div>
+                        <div className="rounded-3xl border border-gray-200 bg-orange-50 p-6 shadow-sm">
+                          <p className="text-sm font-medium text-orange-700">On Leave</p>
+                          <p className="mt-4 text-3xl font-bold text-orange-900">{staffMembers.filter((member) => member.status === "On Leave").length}</p>
+                          <p className="text-xs text-orange-600 mt-2">Currently On Leave</p>
+                        </div>
+                        <div className="rounded-3xl border border-gray-200 bg-pink-50 p-6 shadow-sm">
+                          <p className="text-sm font-medium text-pink-700">Inactive</p>
+                          <p className="mt-4 text-3xl font-bold text-pink-900">{staffMembers.filter((member) => member.status === "Inactive").length}</p>
+                          <p className="text-xs text-pink-600 mt-2">Inactive Staff</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                           <div>
-                            <label className="text-sm font-semibold text-gray-700">Status <span className="text-red-500">*</span></label>
+                            <h4 className="text-lg font-bold text-gray-900">Staff List</h4>
+                            <p className="text-sm text-gray-500">Search and manage your staff members</p>
+                          </div>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
+                              <Search size={18} className="text-gray-400" />
+                              <input
+                                type="text"
+                                value={staffSearch}
+                                onChange={(e) => setStaffSearch(e.target.value)}
+                                placeholder="Search staff by name, role..."
+                                className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                              />
+                            </div>
                             <select
-                              required
-                              value={newStaffMember.status}
-                              onChange={(e) => setNewStaffMember((current) => ({ ...current, status: e.target.value }))}
-                              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
+                              value={staffStatusFilter}
+                              onChange={(e) => setStaffStatusFilter(e.target.value)}
+                              className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none"
                             >
-                              <option value="Active">Select Status</option>
+                              <option value="All">All Status</option>
                               <option value="Active">Active</option>
                               <option value="On Duty">On Duty</option>
                               <option value="On Leave">On Leave</option>
                               <option value="Inactive">Inactive</option>
                             </select>
-                          </div>
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Phone <span className="text-red-500">*</span></label>
-                            <input
-                              type="tel"
-                              inputMode="numeric"
-                              maxLength={10}
-                              required
-                              value={newStaffMember.phone}
-                              onChange={(e) => {
-                                setNewStaffMember((current) => ({ ...current, phone: e.target.value }));
-                                setStaffErrors((current) => ({ ...current, phone: "" }));
-                              }}
-                              placeholder="Enter phone number"
-                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
-                                staffErrors.phone ? "border-red-400" : "border-gray-200"
-                              }`}
-                            />
-                            {staffErrors.phone && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.phone}</p>}
-                          </div>
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Role <span className="text-red-500">*</span></label>
-                            <select
-                              required
-                              value={newStaffMember.role}
-                              onChange={(e) => {
-                                setNewStaffMember((current) => ({ ...current, role: e.target.value }));
-                              }}
-                              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
-                            >
-                              <option value="Event Manager">Select Role</option>
-                              <option value="Event Manager">Event Manager</option>
-                              <option value="Coordinator">Coordinator</option>
-                              <option value="Security Staff">Security Staff</option>
-                              <option value="Catering Staff">Catering Staff</option>
-                              <option value="Decorator">Decorator</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsAddStaff(false);
-                            setEditingStaffId(null);
-                            setStaffErrors({});
-                            setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
-                          }}
-                          className="rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleStaffSave}
-                          className="rounded-full bg-[#5b2ceb] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-colors"
-                        >
-                          {editingStaffId ? "Update Staff" : "Save Staff"}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6 shadow-sm">
-                      <div className="mb-6">
-                        <h3 className="text-lg font-bold text-gray-900">Staff Roles Information</h3>
-                        <p className="text-sm text-gray-500">Quick reference to staff roles and responsibilities.</p>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef2ff] text-[#5b2ceb]">
-                            <Briefcase size={20} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">Event Manager</p>
-                            <p className="text-sm text-gray-500">Manage overall event planning and execution.</p>
+                            <button className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                              <Calendar size={18} />
+                            </button>
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ecfdf5] text-[#10b981]">
-                            <Users size={20} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">Coordinator</p>
-                            <p className="text-sm text-gray-500">Coordinate between teams and manage schedules.</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6ff] text-[#2563eb]">
-                            <ShieldCheck size={20} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">Security Staff</p>
-                            <p className="text-sm text-gray-500">Ensure event security and safety.</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff7ed] text-[#f97316]">
-                            <Coffee size={20} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">Catering Staff</p>
-                            <p className="text-sm text-gray-500">Handle catering and food arrangements.</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fce7f3] text-[#d946ef]">
-                            <Sparkles size={20} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">Decorator</p>
-                            <p className="text-sm text-gray-500">Manage decoration and venue setup.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-                      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <p className="text-sm font-medium text-gray-500">Total Staff</p>
-                        <p className="mt-4 text-3xl font-bold text-gray-900">{staffMembers.length}</p>
-                        <p className="text-xs text-gray-400 mt-2">All Staff Members</p>
-                      </div>
-                      <div className="rounded-3xl border border-gray-200 bg-emerald-50 p-6 shadow-sm">
-                        <p className="text-sm font-medium text-emerald-700">Active Staff</p>
-                        <p className="mt-4 text-3xl font-bold text-emerald-900">{staffMembers.filter((member) => member.status === "Active").length}</p>
-                        <p className="text-xs text-emerald-600 mt-2">Currently Active</p>
-                      </div>
-                      <div className="rounded-3xl border border-gray-200 bg-sky-50 p-6 shadow-sm">
-                        <p className="text-sm font-medium text-sky-700">On Duty</p>
-                        <p className="mt-4 text-3xl font-bold text-sky-900">{staffMembers.filter((member) => member.status === "On Duty").length}</p>
-                        <p className="text-xs text-sky-600 mt-2">Currently On Duty</p>
-                      </div>
-                      <div className="rounded-3xl border border-gray-200 bg-orange-50 p-6 shadow-sm">
-                        <p className="text-sm font-medium text-orange-700">On Leave</p>
-                        <p className="mt-4 text-3xl font-bold text-orange-900">{staffMembers.filter((member) => member.status === "On Leave").length}</p>
-                        <p className="text-xs text-orange-600 mt-2">Currently On Leave</p>
-                      </div>
-                      <div className="rounded-3xl border border-gray-200 bg-pink-50 p-6 shadow-sm">
-                        <p className="text-sm font-medium text-pink-700">Inactive</p>
-                        <p className="mt-4 text-3xl font-bold text-pink-900">{staffMembers.filter((member) => member.status === "Inactive").length}</p>
-                        <p className="text-xs text-pink-600 mt-2">Inactive Staff</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                          <h4 className="text-lg font-bold text-gray-900">Staff List</h4>
-                          <p className="text-sm text-gray-500">Search and manage your staff members</p>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                          <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
-                            <Search size={18} className="text-gray-400" />
-                            <input
-                              type="text"
-                              value={staffSearch}
-                              onChange={(e) => setStaffSearch(e.target.value)}
-                              placeholder="Search staff by name, role..."
-                              className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                            />
-                          </div>
-                          <select
-                            value={staffStatusFilter}
-                            onChange={(e) => setStaffStatusFilter(e.target.value)}
-                            className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none"
-                          >
-                            <option value="All">All Status</option>
-                            <option value="Active">Active</option>
-                            <option value="On Duty">On Duty</option>
-                            <option value="On Leave">On Leave</option>
-                            <option value="Inactive">Inactive</option>
-                          </select>
-                          <button className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                            <Calendar size={18} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm text-gray-700">
-                          <thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
-                            <tr>
-                              <th className="px-4 py-4">#</th>
-                              <th className="px-4 py-4">Name</th>
-                              <th className="px-4 py-4">Email</th>
-                              <th className="px-4 py-4">Phone</th>
-                              <th className="px-4 py-4">Role</th>
-                              <th className="px-4 py-4">Status</th>
-                              <th className="px-4 py-4">Assigned Events</th>
-                              <th className="px-4 py-4 text-right">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-100 bg-white">
-                            {staffMembers
-                              .filter((member) =>
-                                member.name.toLowerCase().includes(staffSearch.toLowerCase()) ||
-                                member.role.toLowerCase().includes(staffSearch.toLowerCase())
-                              )
-                              .filter((member) =>
-                                staffStatusFilter === "All" ? true : member.status === staffStatusFilter
-                              )
-                              .map((member, index) => (
-                                <tr key={member.id} className="hover:bg-gray-50 transition-colors">
-                                  <td className="px-4 py-4 font-semibold text-gray-900">{index + 1}</td>
-                                  <td className="px-4 py-4 flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ede8ff] text-sm font-semibold text-[#5b2ceb]">
-                                      {member.initials}
-                                    </div>
-                                    <div>
-                                      <p className="font-semibold text-gray-900">{member.name}</p>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-4 text-gray-600">{member.email}</td>
-                                  <td className="px-4 py-4 text-gray-600">{member.phone}</td>
-                                  <td className="px-4 py-4">
-                                    <span className="rounded-full bg-[#f3f0ff] px-3 py-1 text-xs font-semibold text-[#5b2ceb]">
-                                      {member.role}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-4">
-                                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                                      member.status === "Active"
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full text-left text-sm text-gray-700">
+                            <thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
+                              <tr>
+                                <th className="px-4 py-4">#</th>
+                                <th className="px-4 py-4">Name</th>
+                                <th className="px-4 py-4">Email</th>
+                                <th className="px-4 py-4">Phone</th>
+                                <th className="px-4 py-4">Role</th>
+                                <th className="px-4 py-4">Status</th>
+                                <th className="px-4 py-4">Assigned Events</th>
+                                <th className="px-4 py-4 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 bg-white">
+                              {staffMembers
+                                .filter((member) =>
+                                  member.name.toLowerCase().includes(staffSearch.toLowerCase()) ||
+                                  member.role.toLowerCase().includes(staffSearch.toLowerCase())
+                                )
+                                .filter((member) =>
+                                  staffStatusFilter === "All" ? true : member.status === staffStatusFilter
+                                )
+                                .map((member, index) => (
+                                  <tr key={member.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-4 py-4 font-semibold text-gray-900">{index + 1}</td>
+                                    <td className="px-4 py-4 flex items-center gap-3">
+                                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ede8ff] text-sm font-semibold text-[#5b2ceb]">
+                                        {member.initials}
+                                      </div>
+                                      <div>
+                                        <p className="font-semibold text-gray-900">{member.name}</p>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-gray-600">{member.email}</td>
+                                    <td className="px-4 py-4 text-gray-600">{member.phone}</td>
+                                    <td className="px-4 py-4">
+                                      <span className="rounded-full bg-[#f3f0ff] px-3 py-1 text-xs font-semibold text-[#5b2ceb]">
+                                        {member.role}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-4">
+                                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${member.status === "Active"
                                         ? "bg-emerald-100 text-emerald-800"
                                         : member.status === "On Duty"
-                                        ? "bg-sky-100 text-sky-800"
-                                        : member.status === "On Leave"
-                                        ? "bg-orange-100 text-orange-800"
-                                        : "bg-gray-100 text-gray-700"
-                                    }`}>
-                                      {member.status}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-4 text-gray-700">{member.assignedEvents} Events</td>
-                                  <td className="px-4 py-4 text-right space-x-2">
+                                          ? "bg-sky-100 text-sky-800"
+                                          : member.status === "On Leave"
+                                            ? "bg-orange-100 text-orange-800"
+                                            : "bg-gray-100 text-gray-700"
+                                        }`}>
+                                        {member.status}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-4 text-gray-700">{member.assignedEvents} Events</td>
+                                    <td className="px-4 py-4 text-right space-x-2">
                                       <button
-                                      onClick={() => {
-                                        setNewStaffMember({
-                                          name: member.name,
-                                          email: member.email,
-                                          phone: member.phone,
-                                          password: "",
-                                          role: member.role,
-                                          status: member.status,
-                                        });
-                                        setEditingStaffId(member.id);
-                                        setStaffErrors({});
-                                        setIsAddStaff(true);
-                                      }}
-                                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
-                                      title="Edit staff member"
-                                    >
-                                      <Edit3 size={16} />
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (window.confirm(`Are you sure you want to delete ${member.name}?`)) {
-                                          setStaffMembers((current) => current.filter((m) => m.id !== member.id));
-                                        }
-                                      }}
-                                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-                                      title="Delete staff member"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
+                                        onClick={() => {
+                                          setNewStaffMember({
+                                            name: member.name,
+                                            email: member.email,
+                                            phone: member.phone,
+                                            password: "",
+                                            role: member.role,
+                                            status: member.status,
+                                          });
+                                          setEditingStaffId(member.id);
+                                          setStaffErrors({});
+                                          setIsAddStaff(true);
+                                        }}
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                                        title="Edit staff member"
+                                      >
+                                        <Edit3 size={16} />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (window.confirm(`Are you sure you want to delete ${member.name}?`)) {
+                                            setStaffMembers((current) => current.filter((m) => m.id !== member.id));
+                                          }
+                                        }}
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                                        title="Delete staff member"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
             ) : (
               <div className="space-y-6">
                 <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
@@ -1505,11 +1494,10 @@ function AdminDashboard() {
                               <td className="px-4 py-4 text-gray-600">{vendor.phone}</td>
                               <td className="px-4 py-4 text-gray-600">{vendor.email}</td>
                               <td className="px-4 py-4">
-                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                                  vendor.contractStatus === "Active"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}>
+                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${vendor.contractStatus === "Active"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-red-100 text-red-800"
+                                  }`}>
                                   {vendor.contractStatus}
                                 </span>
                               </td>
