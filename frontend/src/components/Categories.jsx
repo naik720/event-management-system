@@ -1,17 +1,15 @@
 import React from "react";
 
 const categories = [
-  "Music",
-  "Food",
-  "Sports",
-  "Business",
-  "Travel",
-  "Party",
+  "Wedding",
+  "Birthday",
+  "Conference",
+  "Auditorium",
 ];
 
 function Categories() {
   return (
-    <div className="max-w-6xl mx-auto grid md:grid-cols-6 gap-5 px-5">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 px-5">
       {categories.map((cat, index) => (
         <div
           key={index}

@@ -12,6 +12,13 @@ const BrowseVenues = () => {
   const clientName = getClientDisplayName(currentClient);
   const clientInitial = getClientInitial(currentClient);
   const [venues, setVenues] = useState([]);
+  const [wishlist, setWishlist] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("wishlist") || "[]");
+    } catch (e) {
+      return [];
+    }
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("All Locations");
   const [sortBy, setSortBy] = useState("latest");
@@ -52,6 +59,38 @@ const BrowseVenues = () => {
         return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
       });
   }, [venues, searchTerm, location, sortBy]);
+
+  const isSaved = (venue) => wishlist.some((w) => w.id === (venue._id || venue.id));
+
+  const toWishlistEvent = (venue) => ({
+    id: venue._id || venue.id || Date.now(),
+    title: venue.name,
+    date: venue.availableDate || "TBD 01, 2026",
+    time: venue.time || "",
+    location: venue.location || "",
+    price: venue.price || 0,
+    status: "Saved",
+    image: venue.images?.[0] || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=700&q=80",
+  });
+
+  const toggleWishlist = (venue, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const id = venue._id || venue.id || Date.now();
+    if (isSaved(venue)) {
+      setWishlist((current) => {
+        const next = current.filter((it) => it.id !== id);
+        localStorage.setItem("wishlist", JSON.stringify(next));
+        return next;
+      });
+    } else {
+      const entry = toWishlistEvent(venue);
+      setWishlist((current) => {
+        const next = [entry, ...current];
+        localStorage.setItem("wishlist", JSON.stringify(next));
+        return next;
+      });
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -145,8 +184,13 @@ const BrowseVenues = () => {
                     <span className={venue.status === "Available" ? "status-badge" : "status-badge offline"}>
                       {venue.status || "Available"}
                     </span>
-                    <button type="button" aria-label={`Save ${venue.name}`}>
-                      <Heart size={18} />
+                    <button
+                      type="button"
+                      aria-label={`Save ${venue.name}`}
+                      onClick={(e) => toggleWishlist(venue, e)}
+                      className="wishlist-toggle"
+                    >
+                      <Heart size={18} className={isSaved(venue) ? "text-red-500" : "text-white"} />
                     </button>
                   </div>
 

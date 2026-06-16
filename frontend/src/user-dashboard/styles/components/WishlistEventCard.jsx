@@ -9,14 +9,19 @@ const getDateParts = (dateText) => {
   };
 };
 
-const WishlistEventCard = ({ event, onRemove }) => {
+const WishlistEventCard = ({ event, onRemove, onView }) => {
   const { day, month } = getDateParts(event.date);
 
   return (
     <article className="wishlist-event-card">
       <div className="wishlist-image-wrap">
         <img src={event.image} alt={event.title} />
-        <button type="button" className="wishlist-heart" aria-label={`Saved ${event.title}`}>
+        <button
+          type="button"
+          className="wishlist-heart"
+          aria-label={`Remove ${event.title}`}
+          onClick={() => onRemove && onRemove(event.id)}
+        >
           <Heart size={18} fill="currentColor" />
         </button>
         <div className="wishlist-date-badge">
@@ -45,7 +50,7 @@ const WishlistEventCard = ({ event, onRemove }) => {
 
         <div className="wishlist-card-footer">
           <strong>{event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}</strong>
-          <button type="button" className="details-button">
+          <button type="button" className="details-button" onClick={() => onView && onView(event)}>
             View Details
           </button>
           <button

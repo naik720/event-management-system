@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { CalendarDays, MapPin } from "lucide-react";
 import { getEvents } from "../services/userApi";
@@ -13,8 +13,16 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
+    // If route state contains the event, use it directly to avoid extra fetch
+    if (location.state && location.state.event) {
+      setEvent(location.state.event);
+      setLoading(false);
+      return;
+    }
+
     getEvents()
       .then((events) => {
         const found = events.find((e) => String(e.id) === String(eventId));
@@ -25,7 +33,7 @@ const EventDetails = () => {
         setError("Unable to load event details");
         setLoading(false);
       });
-  }, [eventId]);
+  }, [eventId, location.state]);
 
   if (loading) return <div className="dashboard-container"><Sidebar /><main className="main-content"><p>Loading...</p></main></div>;
   if (error || !event) return <div className="dashboard-container"><Sidebar /><main className="main-content"><p>Event not found.</p></main></div>;

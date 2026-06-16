@@ -23,6 +23,8 @@ import HelpSupport from "./user-dashboard/pages/HelpSupport";
 import Feedback from "./user-dashboard/pages/Feedback";
 import Notification from "./user-dashboard/pages/Notification";
 import EventRequest from "./user-dashboard/pages/EventRequest";
+import StaffDashboard from "./Vendor&staffManagement/staff/pages/StaffDashboard";
+import VendorDashboard from "./Vendor&staffManagement/vendor/pages/VendorDashboard";
 
 // Event Management Layout and Base Workflow Pages
 import EventManagementDashboard from "./pages/events/EventManagementDashboard";
@@ -62,6 +64,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/staff/dashboard" element={<StaffDashboard />} />
+      <Route path="/vendor/dashboard" element={<VendorDashboard />} />
 
       {/* --- General User Dashboard Routes --- */}
       <Route
@@ -357,6 +361,14 @@ function App() {
       />
       <Route
         path="/admin/venue-management/*"
+        element={
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/vendor-management/*"
         element={
           <AdminProtectedRoute>
             <AdminDashboard />
