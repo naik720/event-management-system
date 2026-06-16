@@ -40,6 +40,7 @@ import MaintenanceRecords from "../venue-management/pages/MaintenanceRecords";
 import SeatingArrangements from "../venue-management/pages/SeatingArrangements";
 import VenueDetails from "../venue-management/pages/VenueDetails";
 import AvailabilityCalendar from "../venue-management/pages/AvailabilityCalendar";
+import BillingDashboard from "../venue-management/pages/BillingDashboard";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -118,6 +119,7 @@ function AdminDashboard() {
     { key: "seating-layout", label: "Seating Arrangements" },
     { key: "maintenance", label: "Maintenance Records" },
     { key: "venue-revenue", label: "Venue Revenue" },
+    { key: "billing", label: "Billing Dashboard" },
   ];
 
   const [events, setEvents] = useState([
@@ -242,6 +244,7 @@ function AdminDashboard() {
     "/admin/venue-management/seating-layout": "Seating Arrangements",
     "/admin/venue-management/maintenance": "Maintenance Records",
     "/admin/venue-management/venue-revenue": "Venue Revenue",
+    "/admin/venue-management/billing": "Billing Dashboard",
   };
 
   const pageTitle = location.pathname.startsWith("/admin/venue-management")
@@ -430,6 +433,8 @@ function AdminDashboard() {
             <SeatingArrangements />
           ) : location.pathname === "/admin/venue-management/venue-revenue" ? (
             <VenueDetails />
+          ) : location.pathname === "/admin/venue-management/billing" ? (
+            <BillingDashboard />
           ) : location.pathname.startsWith("/admin/venue-management") ? (
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-md p-6">

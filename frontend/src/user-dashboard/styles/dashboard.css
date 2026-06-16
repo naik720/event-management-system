@@ -3150,6 +3150,16 @@ button{
   margin-top:5px;
 }
 
+.billing-table .module-table-row{
+  min-width:940px;
+  grid-template-columns:170px 100px 120px 120px 110px minmax(180px,1fr);
+}
+
+.billing-history-table .module-table-row{
+  min-width:820px;
+  grid-template-columns:180px 150px 140px 120px minmax(160px,1fr);
+}
+
 .module-status{
   margin-bottom:0;
   text-align:center;
