@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -17,74 +18,7 @@ import WishlistEventCard from "../styles/components/WishlistEventCard";
 import { getClientDisplayName, getClientPhoto, getCurrentClient } from "../services/clientSession";
 import "../styles/dashboard.css";
 
-const savedEvents = [
-  {
-    id: 1,
-    title: "Music Concert 2026",
-    category: "Music",
-    date: "May 25, 2026",
-    time: "07:00 PM",
-    location: "Auditorium Hall, New York",
-    price: 120,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 2,
-    title: "Tech Conference",
-    category: "Tech",
-    date: "Jun 10, 2026",
-    time: "09:00 AM",
-    location: "Tech Park, New York",
-    price: 200,
-    status: "Price Drop",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 3,
-    title: "Design Workshop",
-    category: "Workshop",
-    date: "Jun 18, 2026",
-    time: "02:00 PM",
-    location: "Creative Hub, New York",
-    price: 150,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 4,
-    title: "Food Festival 2026",
-    category: "Food & Drink",
-    date: "Jul 05, 2026",
-    time: "06:00 PM",
-    location: "Central Park, New York",
-    price: 80,
-    status: "On Sale",
-    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 5,
-    title: "Sports Event Live",
-    category: "Sports",
-    date: "Jun 20, 2026",
-    time: "08:00 PM",
-    location: "Stadium Arena, New York",
-    price: 180,
-    status: "On Sale",
-    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 6,
-    title: "Art Exhibition",
-    category: "Art & Culture",
-    date: "Aug 01, 2026",
-    time: "11:00 AM",
-    location: "Art Gallery, New York",
-    price: 60,
-    status: "Price Drop",
-    image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=700&q=80",
-  },
-];
+// Wishlist items are persisted in `localStorage` under key "wishlist".
 
 const chartColors = {
   Upcoming: "#3b82f6",
@@ -97,17 +31,17 @@ const priceAlerts = [
   {
     title: "Tech Conference",
     text: "Price dropped by $50",
-    image: savedEvents[1].image,
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
   },
   {
     title: "Food Festival 2026",
     text: "20% off available",
-    image: savedEvents[3].image,
+    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=700&q=80",
   },
   {
     title: "Sports Event Live",
     text: "Early bird offer",
-    image: savedEvents[4].image,
+    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=700&q=80",
   },
 ];
 
@@ -115,7 +49,13 @@ const Wishlist = () => {
   const currentClient = getCurrentClient();
   const clientName = getClientDisplayName(currentClient);
   const clientPhoto = getClientPhoto(currentClient);
-  const [events, setEvents] = useState(savedEvents);
+  const [events, setEvents] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("wishlist") || "[]");
+    } catch (e) {
+      return [];
+    }
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recent");
 
@@ -166,6 +106,22 @@ const Wishlist = () => {
   const removeEvent = (eventId) => {
     setEvents((currentEvents) => currentEvents.filter((event) => event.id !== eventId));
   };
+
+  const navigate = useNavigate();
+
+  const viewDetails = (event) => {
+    // navigate to event details and pass event data to avoid refetch/loading
+    navigate(`/user/event/${event.id}`, { state: { event } });
+  };
+
+  // sync changes to localStorage
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("wishlist", JSON.stringify(events));
+    } catch (e) {
+      // ignore write errors
+    }
+  }, [events]);
 
   return (
     <div className="dashboard-container">
@@ -253,7 +209,7 @@ const Wishlist = () => {
             ) : (
               <div className="wishlist-event-grid">
                 {filteredEvents.map((event) => (
-                  <WishlistEventCard key={event.id} event={event} onRemove={removeEvent} />
+                  <WishlistEventCard key={event.id} event={event} onRemove={removeEvent} onView={viewDetails} />
                 ))}
               </div>
             )}

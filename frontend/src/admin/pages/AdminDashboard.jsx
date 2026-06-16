@@ -30,7 +30,14 @@ import {
   TrendingUp,
   Settings,
   Plus,
+  Search,
+  Edit3,
+  Trash2,
   Loader2,
+  Briefcase,
+  ShieldCheck,
+  Coffee,
+  Sparkles,
 } from "lucide-react";
 import VenueDashboard from "../venue-management/pages/VenueDashboard";
 import AddVenue from "../venue-management/pages/AddVenue";
@@ -40,6 +47,7 @@ import MaintenanceRecords from "../venue-management/pages/MaintenanceRecords";
 import SeatingArrangements from "../venue-management/pages/SeatingArrangements";
 import VenueDetails from "../venue-management/pages/VenueDetails";
 import AvailabilityCalendar from "../venue-management/pages/AvailabilityCalendar";
+import AddVendor from "../vendor-management/pages/AddVendor";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -47,6 +55,38 @@ function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [venueOpen, setVenueOpen] = useState(location.pathname.startsWith("/admin/venue-management"));
+  const [staffSubTab, setStaffSubTab] = useState("staff-management");
+  const [isAddStaff, setIsAddStaff] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState(null);
+  const [staffSearch, setStaffSearch] = useState("");
+  const [staffStatusFilter, setStaffStatusFilter] = useState("All");
+  const [staffErrors, setStaffErrors] = useState({});
+  const [newStaffMember, setNewStaffMember] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "Event Manager",
+    status: "Active",
+  });
+  const [staffMembers, setStaffMembers] = useState([
+    { id: 1, initials: "RS", name: "Rahul Sharma", email: "rahul@gmail.com", phone: "9876543210", role: "Event Manager", status: "Active", assignedEvents: 2 },
+    { id: 2, initials: "PV", name: "Priya Verma", email: "priya@gmail.com", phone: "9123456780", role: "Coordinator", status: "Active", assignedEvents: 3 },
+    { id: 3, initials: "AS", name: "Amit Singh", email: "amit@gmail.com", phone: "9988776655", role: "Security Staff", status: "On Duty", assignedEvents: 1 },
+    { id: 4, initials: "NG", name: "Neha Gupta", email: "neha@gmail.com", phone: "8899887766", role: "Catering Staff", status: "On Leave", assignedEvents: 1 },
+    { id: 5, initials: "RP", name: "Rohit Patel", email: "rohit@gmail.com", phone: "7766554433", role: "Decorator", status: "Active", assignedEvents: 2 },
+  ]);
+  const [vendorSearch, setVendorSearch] = useState("");
+  const [vendorStatusFilter, setVendorStatusFilter] = useState("All");
+  const [vendors, setVendors] = useState([
+    { id: 1, initials: "FP", name: "Food Palace", category: "Catering", phone: "9088776655", email: "contact@foodpalace.com", contractStatus: "Active", assignedEvents: 2 },
+    { id: 2, initials: "DD", name: "Dream Decorators", category: "Decoration", phone: "8877665544", email: "info@dreamdecor.com", contractStatus: "Active", assignedEvents: 3 },
+    { id: 3, initials: "SS", name: "SnapStudio", category: "Photography", phone: "7766554433", email: "hello@snapstudio.com", contractStatus: "Active", assignedEvents: 2 },
+    { id: 4, initials: "SW", name: "Sound Wala", category: "Sound & Lighting", phone: "6655443322", email: "support@soundwala.com", contractStatus: "Active", assignedEvents: 1 },
+    { id: 5, initials: "PP", name: "Party Props", category: "Decoration", phone: "9988665544", email: "sales@partyprops.com", contractStatus: "Expired", assignedEvents: 0 },
+  ]);
+  const [vendorEditingId, setVendorEditingId] = useState(null);
+  const [vendorDraft, setVendorDraft] = useState(null);
 
   useEffect(() => {
     const adminToken = localStorage.getItem("adminToken");
@@ -58,6 +98,10 @@ function AdminDashboard() {
   useEffect(() => {
     if (location.pathname.startsWith("/admin/venue-management")) {
       setVenueOpen(true);
+    }
+    if (location.pathname.startsWith("/admin/vendor-management")) {
+      setActiveTab("staff");
+      setStaffSubTab("vendor-management");
     }
     if (location.pathname === "/admin" || location.pathname === "/admin/dashboard") {
       setActiveTab("overview");
@@ -119,6 +163,130 @@ function AdminDashboard() {
     { key: "maintenance", label: "Maintenance Records" },
     { key: "venue-revenue", label: "Venue Revenue" },
   ];
+
+  const getVendorInitials = (name) =>
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word[0] || "")
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "NV";
+
+  const buildVendorRecord = (vendorData, existingVendor = null) => ({
+    id: existingVendor?.id || Date.now(),
+    initials: getVendorInitials(vendorData.vendorName || existingVendor?.name || "New Vendor"),
+    name: vendorData.vendorName || existingVendor?.name || "New Vendor",
+    category: vendorData.category || existingVendor?.category || "Catering",
+    phone: vendorData.phone || "",
+    email: vendorData.email || "",
+    address: vendorData.address || existingVendor?.address || "",
+    contactPerson: vendorData.contactPerson || existingVendor?.contactPerson || "",
+    contractStartDate: vendorData.contractStartDate || existingVendor?.contractStartDate || "",
+    contractEndDate: vendorData.contractEndDate || existingVendor?.contractEndDate || "",
+    contractStatus: vendorData.status || existingVendor?.contractStatus || "Active",
+    status: vendorData.status || existingVendor?.status || "Active",
+    assignedEvents: existingVendor?.assignedEvents ?? 0,
+  });
+
+  const validateStaffMember = () => {
+    const nextErrors = {};
+    const emailValue = newStaffMember.email.trim();
+    const phoneValue = newStaffMember.phone.trim();
+    const passwordValue = newStaffMember.password.trim();
+
+    if (!newStaffMember.name.trim()) {
+      nextErrors.name = "Name is required";
+    }
+
+    if (!emailValue) {
+      nextErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      nextErrors.email = "Please enter a valid email address";
+    } else if (
+      staffMembers.some(
+        (member) => member.email.toLowerCase() === emailValue.toLowerCase() && member.id !== editingStaffId
+      )
+    ) {
+      nextErrors.email = "Email already exists";
+    }
+
+    if (!phoneValue) {
+      nextErrors.phone = "Phone number is required";
+    } else if (!/^[0-9]{10}$/.test(phoneValue)) {
+      nextErrors.phone = "Phone number must be 10 digits";
+    } else if (
+      staffMembers.some((member) => member.phone.trim() === phoneValue && member.id !== editingStaffId)
+    ) {
+      nextErrors.phone = "Phone number already exists";
+    }
+
+    if (!passwordValue && !editingStaffId) {
+      nextErrors.password = "Password must be at least 6 characters";
+    } else if (passwordValue && passwordValue.length < 6) {
+      nextErrors.password = "Password must be at least 6 characters";
+    }
+
+    return nextErrors;
+  };
+
+  const handleStaffSave = () => {
+    const nextErrors = validateStaffMember();
+    setStaffErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    if (editingStaffId) {
+      setStaffMembers((current) =>
+        current.map((member) =>
+          member.id === editingStaffId
+            ? {
+                ...member,
+                name: newStaffMember.name.trim(),
+                email: newStaffMember.email.trim(),
+                phone: newStaffMember.phone.trim(),
+                password: newStaffMember.password.trim() || member.password || "",
+                role: newStaffMember.role,
+                status: newStaffMember.status,
+                initials: newStaffMember.name
+                  .split(" ")
+                  .map((word) => word[0] || "")
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2),
+              }
+            : member
+        )
+      );
+      setEditingStaffId(null);
+    } else {
+      const initials = newStaffMember.name
+        .split(" ")
+        .map((word) => word[0] || "")
+        .join("")
+        .toUpperCase();
+      setStaffMembers((current) => [
+        ...current,
+        {
+          id: Date.now(),
+          initials: initials.slice(0, 2),
+          name: newStaffMember.name.trim(),
+          email: newStaffMember.email.trim(),
+          phone: newStaffMember.phone.trim(),
+          password: newStaffMember.password.trim(),
+          role: newStaffMember.role,
+          status: newStaffMember.status,
+          assignedEvents: 0,
+        },
+      ]);
+    }
+
+    setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
+    setStaffErrors({});
+    setIsAddStaff(false);
+  };
 
   const [events, setEvents] = useState([
     { id: 1, name: "Tech Summit 2026", date: "2026-06-15", venue: "Convention Center", status: "Confirmed" },
@@ -242,10 +410,12 @@ function AdminDashboard() {
     "/admin/venue-management/seating-layout": "Seating Arrangements",
     "/admin/venue-management/maintenance": "Maintenance Records",
     "/admin/venue-management/venue-revenue": "Venue Revenue",
+    "/admin/vendor-management/overview": "Vendor Management",
+    "/admin/vendor-management/add-vendor": "Add Vendor",
   };
 
-  const pageTitle = location.pathname.startsWith("/admin/venue-management")
-    ? routeTitles[location.pathname] || "Venue Management"
+  const pageTitle = location.pathname.startsWith("/admin/venue-management") || location.pathname.startsWith("/admin/vendor-management")
+    ? routeTitles[location.pathname] || (location.pathname.startsWith("/admin/vendor-management") ? "Vendor Management" : "Venue Management")
     : activeTab === "events"
     ? "Manage Events"
     : activeTab === "clients"
@@ -292,21 +462,78 @@ function AdminDashboard() {
               { id: "clients", label: "Manage Clients", icon: Users },
               { id: "staff", label: "Staff & Vendors", icon: Users },
             ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  navigate("/admin/dashboard");
-                }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
-                    ? "bg-amber-600 text-white"
-                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <item.icon size={20} />
-                {sidebarOpen && <span>{item.label}</span>}
-              </button>
+              item.id === "staff" ? (
+                <React.Fragment key={item.id}>
+                  <button
+                    onClick={() => {
+                      setActiveTab("staff");
+                      setStaffSubTab("staff-management");
+                      navigate("/admin/dashboard");
+                    }}
+                    className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === "staff" && !location.pathname.startsWith("/admin/venue-management")
+                        ? "bg-amber-600 text-white"
+                        : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <item.icon size={20} />
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </div>
+                    {sidebarOpen && <ChevronDown size={16} />}
+                  </button>
+                  {sidebarOpen && activeTab === "staff" && (
+                    <div className="ml-6 mt-2 space-y-1 border-l border-gray-700 pl-3">
+                      <button
+                        onClick={() => {
+                          setActiveTab("staff");
+                          setStaffSubTab("staff-management");
+                          navigate("/admin/dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
+                          staffSubTab === "staff-management"
+                            ? "bg-gray-700 text-white"
+                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                        }`}
+                      >
+                        Staff Management
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveTab("staff");
+                          setStaffSubTab("vendor-management");
+                          setVendorDraft(null);
+                          setVendorEditingId(null);
+                          navigate("/admin/vendor-management/overview");
+                        }}
+                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
+                          location.pathname.startsWith("/admin/vendor-management") || staffSubTab === "vendor-management"
+                            ? "bg-gray-700 text-white"
+                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                        }`}
+                      >
+                        Vendor Management
+                      </button>
+                    </div>
+                  )}
+                </React.Fragment>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    navigate("/admin/dashboard");
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                      ? "bg-amber-600 text-white"
+                      : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                  }`}
+                >
+                  <item.icon size={20} />
+                  {sidebarOpen && <span>{item.label}</span>}
+                </button>
+              )
             ))}
           </div>
 
@@ -418,6 +645,32 @@ function AdminDashboard() {
             <VenueDashboard />
           ) : location.pathname === "/admin/venue-management/add-venue" ? (
             <AddVenue />
+          ) : location.pathname === "/admin/vendor-management/add-vendor" ? (
+            <AddVendor
+              initialVendor={vendorDraft}
+              existingVendors={vendors}
+              editingVendorId={vendorEditingId}
+              onSave={(vendorData) => {
+                setVendors((current) => {
+                  const existingVendor = current.find((vendor) => vendor.id === vendorEditingId);
+                  const nextVendor = buildVendorRecord(vendorData, existingVendor || vendorDraft);
+                  if (existingVendor) {
+                    return current.map((vendor) => (vendor.id === existingVendor.id ? nextVendor : vendor));
+                  }
+                  return [...current, nextVendor];
+                });
+                setVendorDraft(null);
+                setVendorEditingId(null);
+                navigate("/admin/vendor-management/overview");
+              }}
+              onCancel={() => {
+                setVendorDraft(null);
+                setVendorEditingId(null);
+                navigate("/admin/vendor-management/overview");
+              }}
+              saveLabel={vendorEditingId ? "Update Vendor" : "Save Vendor"}
+              title={vendorEditingId ? "Edit Vendor" : "Add Vendor"}
+            />
           ) : location.pathname === "/admin/venue-management/all-venues" ? (
             <AllVenues />
           ) : location.pathname === "/admin/venue-management/venue-bookings" ? (
@@ -734,25 +987,565 @@ function AdminDashboard() {
               </div>
             </div>
           ) : activeTab === "staff" ? (
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Staff & Vendors</h3>
-              <div className="space-y-4">
-                {dashboardStats.staffAvailability.map((staff, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{staff.role}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2 overflow-hidden">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(staff.available / staff.total) * 100}%` }} />
+            staffSubTab === "staff-management" ? (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">Staff Management</h3>
+                    <p className="text-sm text-gray-500 mt-1">Manage your organization staff members</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setStaffSubTab("staff-management");
+                      setIsAddStaff(true);
+                      setEditingStaffId(null);
+                      setStaffErrors({});
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#5b2ceb] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-all"
+                  >
+                    <Plus size={16} />
+                    Add Staff
+                  </button>
+                </div>
+
+                {isAddStaff ? (
+                  <div className="grid gap-6 xl:grid-cols-3">
+                    <div className="xl:col-span-2 space-y-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="text-2xl font-bold text-gray-900">{editingStaffId ? "Edit Staff" : "Add Staff"}</h3>
+                          <p className="text-sm text-gray-500">{editingStaffId ? "Update staff member information." : "Create a new staff member and assign their role."}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setIsAddStaff(false);
+                            setEditingStaffId(null);
+                            setStaffErrors({});
+                            setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
+                          }}
+                          className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+                        >
+                          ← Back
+                        </button>
+                      </div>
+
+                      <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Add Staff Form</h4>
+                        <div className="grid gap-4 lg:grid-cols-2">
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Name <span className="text-red-500">*</span></label>
+                            <input
+                              type="text"
+                              required
+                              value={newStaffMember.name}
+                              onChange={(e) => {
+                                setNewStaffMember((current) => ({ ...current, name: e.target.value }));
+                                setStaffErrors((current) => ({ ...current, name: "" }));
+                              }}
+                              placeholder="Enter full name"
+                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
+                                staffErrors.name ? "border-red-400" : "border-gray-200"
+                              }`}
+                            />
+                            {staffErrors.name && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.name}</p>}
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
+                            <input
+                              type="password"
+                              required={!editingStaffId}
+                              value={newStaffMember.password}
+                              onChange={(e) => {
+                                setNewStaffMember((current) => ({ ...current, password: e.target.value }));
+                                setStaffErrors((current) => ({ ...current, password: "" }));
+                              }}
+                              placeholder="Enter password"
+                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
+                                staffErrors.password ? "border-red-400" : "border-gray-200"
+                              }`}
+                            />
+                            {staffErrors.password && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.password}</p>}
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
+                            <input
+                              type="email"
+                              required
+                              value={newStaffMember.email}
+                              onChange={(e) => {
+                                setNewStaffMember((current) => ({ ...current, email: e.target.value }));
+                                setStaffErrors((current) => ({ ...current, email: "" }));
+                              }}
+                              placeholder="Enter email address"
+                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
+                                staffErrors.email ? "border-red-400" : "border-gray-200"
+                              }`}
+                            />
+                            {staffErrors.email && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.email}</p>}
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Status <span className="text-red-500">*</span></label>
+                            <select
+                              required
+                              value={newStaffMember.status}
+                              onChange={(e) => setNewStaffMember((current) => ({ ...current, status: e.target.value }))}
+                              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
+                            >
+                              <option value="Active">Select Status</option>
+                              <option value="Active">Active</option>
+                              <option value="On Duty">On Duty</option>
+                              <option value="On Leave">On Leave</option>
+                              <option value="Inactive">Inactive</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Phone <span className="text-red-500">*</span></label>
+                            <input
+                              type="tel"
+                              inputMode="numeric"
+                              maxLength={10}
+                              required
+                              value={newStaffMember.phone}
+                              onChange={(e) => {
+                                setNewStaffMember((current) => ({ ...current, phone: e.target.value }));
+                                setStaffErrors((current) => ({ ...current, phone: "" }));
+                              }}
+                              placeholder="Enter phone number"
+                              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff] ${
+                                staffErrors.phone ? "border-red-400" : "border-gray-200"
+                              }`}
+                            />
+                            {staffErrors.phone && <p className="mt-2 text-xs font-medium text-red-600">{staffErrors.phone}</p>}
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Role <span className="text-red-500">*</span></label>
+                            <select
+                              required
+                              value={newStaffMember.role}
+                              onChange={(e) => {
+                                setNewStaffMember((current) => ({ ...current, role: e.target.value }));
+                              }}
+                              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#7b5cff] focus:ring-2 focus:ring-[#ede8ff]"
+                            >
+                              <option value="Event Manager">Select Role</option>
+                              <option value="Event Manager">Event Manager</option>
+                              <option value="Coordinator">Coordinator</option>
+                              <option value="Security Staff">Security Staff</option>
+                              <option value="Catering Staff">Catering Staff</option>
+                              <option value="Decorator">Decorator</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsAddStaff(false);
+                            setEditingStaffId(null);
+                            setStaffErrors({});
+                            setNewStaffMember({ name: "", email: "", phone: "", password: "", role: "Event Manager", status: "Active" });
+                          }}
+                          className="rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleStaffSave}
+                          className="rounded-full bg-[#5b2ceb] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-colors"
+                        >
+                          {editingStaffId ? "Update Staff" : "Save Staff"}
+                        </button>
                       </div>
                     </div>
-                    <div className="ml-4 text-right">
-                      <p className="font-bold text-gray-900">{staff.available}/{staff.total}</p>
-                      <p className="text-sm text-gray-500">Available</p>
+
+                    <div className="rounded-3xl border border-gray-200 bg-slate-50 p-6 shadow-sm">
+                      <div className="mb-6">
+                        <h3 className="text-lg font-bold text-gray-900">Staff Roles Information</h3>
+                        <p className="text-sm text-gray-500">Quick reference to staff roles and responsibilities.</p>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef2ff] text-[#5b2ceb]">
+                            <Briefcase size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Event Manager</p>
+                            <p className="text-sm text-gray-500">Manage overall event planning and execution.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ecfdf5] text-[#10b981]">
+                            <Users size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Coordinator</p>
+                            <p className="text-sm text-gray-500">Coordinate between teams and manage schedules.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6ff] text-[#2563eb]">
+                            <ShieldCheck size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Security Staff</p>
+                            <p className="text-sm text-gray-500">Ensure event security and safety.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff7ed] text-[#f97316]">
+                            <Coffee size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Catering Staff</p>
+                            <p className="text-sm text-gray-500">Handle catering and food arrangements.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fce7f3] text-[#d946ef]">
+                            <Sparkles size={20} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">Decorator</p>
+                            <p className="text-sm text-gray-500">Manage decoration and venue setup.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <p className="text-sm font-medium text-gray-500">Total Staff</p>
+                        <p className="mt-4 text-3xl font-bold text-gray-900">{staffMembers.length}</p>
+                        <p className="text-xs text-gray-400 mt-2">All Staff Members</p>
+                      </div>
+                      <div className="rounded-3xl border border-gray-200 bg-emerald-50 p-6 shadow-sm">
+                        <p className="text-sm font-medium text-emerald-700">Active Staff</p>
+                        <p className="mt-4 text-3xl font-bold text-emerald-900">{staffMembers.filter((member) => member.status === "Active").length}</p>
+                        <p className="text-xs text-emerald-600 mt-2">Currently Active</p>
+                      </div>
+                      <div className="rounded-3xl border border-gray-200 bg-sky-50 p-6 shadow-sm">
+                        <p className="text-sm font-medium text-sky-700">On Duty</p>
+                        <p className="mt-4 text-3xl font-bold text-sky-900">{staffMembers.filter((member) => member.status === "On Duty").length}</p>
+                        <p className="text-xs text-sky-600 mt-2">Currently On Duty</p>
+                      </div>
+                      <div className="rounded-3xl border border-gray-200 bg-orange-50 p-6 shadow-sm">
+                        <p className="text-sm font-medium text-orange-700">On Leave</p>
+                        <p className="mt-4 text-3xl font-bold text-orange-900">{staffMembers.filter((member) => member.status === "On Leave").length}</p>
+                        <p className="text-xs text-orange-600 mt-2">Currently On Leave</p>
+                      </div>
+                      <div className="rounded-3xl border border-gray-200 bg-pink-50 p-6 shadow-sm">
+                        <p className="text-sm font-medium text-pink-700">Inactive</p>
+                        <p className="mt-4 text-3xl font-bold text-pink-900">{staffMembers.filter((member) => member.status === "Inactive").length}</p>
+                        <p className="text-xs text-pink-600 mt-2">Inactive Staff</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                        <div>
+                          <h4 className="text-lg font-bold text-gray-900">Staff List</h4>
+                          <p className="text-sm text-gray-500">Search and manage your staff members</p>
+                        </div>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                          <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
+                            <Search size={18} className="text-gray-400" />
+                            <input
+                              type="text"
+                              value={staffSearch}
+                              onChange={(e) => setStaffSearch(e.target.value)}
+                              placeholder="Search staff by name, role..."
+                              className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                            />
+                          </div>
+                          <select
+                            value={staffStatusFilter}
+                            onChange={(e) => setStaffStatusFilter(e.target.value)}
+                            className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none"
+                          >
+                            <option value="All">All Status</option>
+                            <option value="Active">Active</option>
+                            <option value="On Duty">On Duty</option>
+                            <option value="On Leave">On Leave</option>
+                            <option value="Inactive">Inactive</option>
+                          </select>
+                          <button className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Calendar size={18} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-left text-sm text-gray-700">
+                          <thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
+                            <tr>
+                              <th className="px-4 py-4">#</th>
+                              <th className="px-4 py-4">Name</th>
+                              <th className="px-4 py-4">Email</th>
+                              <th className="px-4 py-4">Phone</th>
+                              <th className="px-4 py-4">Role</th>
+                              <th className="px-4 py-4">Status</th>
+                              <th className="px-4 py-4">Assigned Events</th>
+                              <th className="px-4 py-4 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 bg-white">
+                            {staffMembers
+                              .filter((member) =>
+                                member.name.toLowerCase().includes(staffSearch.toLowerCase()) ||
+                                member.role.toLowerCase().includes(staffSearch.toLowerCase())
+                              )
+                              .filter((member) =>
+                                staffStatusFilter === "All" ? true : member.status === staffStatusFilter
+                              )
+                              .map((member, index) => (
+                                <tr key={member.id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="px-4 py-4 font-semibold text-gray-900">{index + 1}</td>
+                                  <td className="px-4 py-4 flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ede8ff] text-sm font-semibold text-[#5b2ceb]">
+                                      {member.initials}
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-gray-900">{member.name}</p>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 text-gray-600">{member.email}</td>
+                                  <td className="px-4 py-4 text-gray-600">{member.phone}</td>
+                                  <td className="px-4 py-4">
+                                    <span className="rounded-full bg-[#f3f0ff] px-3 py-1 text-xs font-semibold text-[#5b2ceb]">
+                                      {member.role}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4">
+                                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                      member.status === "Active"
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : member.status === "On Duty"
+                                        ? "bg-sky-100 text-sky-800"
+                                        : member.status === "On Leave"
+                                        ? "bg-orange-100 text-orange-800"
+                                        : "bg-gray-100 text-gray-700"
+                                    }`}>
+                                      {member.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4 text-gray-700">{member.assignedEvents} Events</td>
+                                  <td className="px-4 py-4 text-right space-x-2">
+                                      <button
+                                      onClick={() => {
+                                        setNewStaffMember({
+                                          name: member.name,
+                                          email: member.email,
+                                          phone: member.phone,
+                                          password: "",
+                                          role: member.role,
+                                          status: member.status,
+                                        });
+                                        setEditingStaffId(member.id);
+                                        setStaffErrors({});
+                                        setIsAddStaff(true);
+                                      }}
+                                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                                      title="Edit staff member"
+                                    >
+                                      <Edit3 size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (window.confirm(`Are you sure you want to delete ${member.name}?`)) {
+                                          setStaffMembers((current) => current.filter((m) => m.id !== member.id));
+                                        }
+                                      }}
+                                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                                      title="Delete staff member"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Vendor Management</h3>
+                      <p className="text-sm text-gray-500 mt-1">Manage your organization vendors and service providers</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setVendorDraft(null);
+                        setVendorEditingId(null);
+                        navigate("/admin/vendor-management/add-vendor");
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#5b2ceb] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#4e25b5] transition-all"
+                    >
+                      <Plus size={16} />
+                      Add Vendor
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <p className="text-sm font-medium text-gray-500">Total Vendors</p>
+                      <p className="mt-4 text-3xl font-bold text-gray-900">{vendors.length}</p>
+                      <p className="text-xs text-gray-400 mt-2">All Vendors</p>
+                    </div>
+                    <div className="rounded-3xl border border-gray-200 bg-emerald-50 p-6 shadow-sm">
+                      <p className="text-sm font-medium text-emerald-700">Active Vendors</p>
+                      <p className="mt-4 text-3xl font-bold text-emerald-900">{vendors.filter((v) => v.contractStatus === "Active").length}</p>
+                      <p className="text-xs text-emerald-600 mt-2">Currently Active</p>
+                    </div>
+                    <div className="rounded-3xl border border-gray-200 bg-sky-50 p-6 shadow-sm">
+                      <p className="text-sm font-medium text-sky-700">Total Categories</p>
+                      <p className="mt-4 text-3xl font-bold text-sky-900">{new Set(vendors.map((v) => v.category)).size}</p>
+                      <p className="text-xs text-sky-600 mt-2">Vendor Categories</p>
+                    </div>
+                    <div className="rounded-3xl border border-gray-200 bg-orange-50 p-6 shadow-sm">
+                      <p className="text-sm font-medium text-orange-700">Contracts Expiring</p>
+                      <p className="mt-4 text-3xl font-bold text-orange-900">3</p>
+                      <p className="text-xs text-orange-600 mt-2">Next 30 Days</p>
+                    </div>
+                    <div className="rounded-3xl border border-gray-200 bg-pink-50 p-6 shadow-sm">
+                      <p className="text-sm font-medium text-pink-700">Total Payments (This Month)</p>
+                      <p className="mt-4 text-3xl font-bold text-pink-900">₹8,75,000</p>
+                      <p className="text-xs text-pink-600 mt-2">All Vendor Payments</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900">Vendor List</h4>
+                      <p className="text-sm text-gray-500">Search and manage your vendors</p>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
+                        <Search size={18} className="text-gray-400" />
+                        <input
+                          type="text"
+                          value={vendorSearch}
+                          onChange={(e) => setVendorSearch(e.target.value)}
+                          placeholder="Search vendor by name, category..."
+                          className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                        />
+                      </div>
+                      <select
+                        value={vendorStatusFilter}
+                        onChange={(e) => setVendorStatusFilter(e.target.value)}
+                        className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none"
+                      >
+                        <option value="All">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Expired">Expired</option>
+                      </select>
+                      <button className="rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        <Calendar size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-left text-sm text-gray-700">
+                      <thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
+                        <tr>
+                          <th className="px-4 py-4">#</th>
+                          <th className="px-4 py-4">Vendor Name</th>
+                          <th className="px-4 py-4">Category</th>
+                          <th className="px-4 py-4">Phone</th>
+                          <th className="px-4 py-4">Email</th>
+                          <th className="px-4 py-4">Contract Status</th>
+                          <th className="px-4 py-4">Assigned Events</th>
+                          <th className="px-4 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 bg-white">
+                        {vendors
+                          .filter((vendor) =>
+                            vendor.name.toLowerCase().includes(vendorSearch.toLowerCase()) ||
+                            vendor.category.toLowerCase().includes(vendorSearch.toLowerCase())
+                          )
+                          .filter((vendor) =>
+                            vendorStatusFilter === "All" ? true : vendor.contractStatus === vendorStatusFilter
+                          )
+                          .map((vendor, index) => (
+                            <tr key={vendor.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-4 py-4 font-semibold text-gray-900">{index + 1}</td>
+                              <td className="px-4 py-4 flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ede8ff] text-sm font-semibold text-[#5b2ceb]">
+                                  {vendor.initials}
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-gray-900">{vendor.name}</p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="rounded-full bg-[#f3f0ff] px-3 py-1 text-xs font-semibold text-[#5b2ceb]">
+                                  {vendor.category}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-gray-600">{vendor.phone}</td>
+                              <td className="px-4 py-4 text-gray-600">{vendor.email}</td>
+                              <td className="px-4 py-4">
+                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                  vendor.contractStatus === "Active"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}>
+                                  {vendor.contractStatus}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-gray-700">{vendor.assignedEvents} Events</td>
+                              <td className="px-4 py-4 text-right space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setVendorDraft(vendor);
+                                    setVendorEditingId(vendor.id);
+                                    navigate("/admin/vendor-management/add-vendor");
+                                  }}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                                  title="Edit vendor"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Are you sure you want to delete ${vendor.name}?`)) {
+                                      setVendors((current) => current.filter((v) => v.id !== vendor.id));
+                                    }
+                                  }}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                                  title="Delete vendor"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )
           ) : activeTab === "bookings" ? (
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               {bookingLoading ? (
