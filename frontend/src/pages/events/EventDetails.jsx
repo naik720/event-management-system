@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import eventAPI from "../../services/eventApi";
 import { ArrowLeft, ArrowRight, MapPin, Clock, Calendar } from "lucide-react";
 
 function EventDetails() {
   const navigate = useNavigate();
   const { eventId } = useParams();
+  const location = useLocation();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,6 +65,12 @@ function EventDetails() {
   }, [eventId]);
 
   useEffect(() => {
+    // If navigation provided event in location state, use it immediately to avoid loading delay
+    if (location && location.state && location.state.event) {
+      setEvent(location.state.event);
+      return;
+    }
+
     fetchEventDetails();
   }, [fetchEventDetails]);
 

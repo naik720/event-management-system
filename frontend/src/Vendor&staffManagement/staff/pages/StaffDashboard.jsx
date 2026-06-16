@@ -32,6 +32,37 @@ const tasks = [
   { task: "Venue Check", event: "Corporate", deadline: "4 PM", status: "Pending" },
 ];
 
+const taskProgress = {
+  total: 12,
+  completed: 7,
+  pending: 5,
+  overdue: 0,
+};
+
+const taskProgressItems = [
+  {
+    label: "Completed",
+    value: taskProgress.completed,
+    total: taskProgress.total,
+    colorClass: "bg-emerald-500",
+    trackClass: "bg-emerald-100",
+  },
+  {
+    label: "Pending",
+    value: taskProgress.pending,
+    total: taskProgress.total,
+    colorClass: "bg-amber-500",
+    trackClass: "bg-amber-100",
+  },
+  {
+    label: "Overdue",
+    value: taskProgress.overdue,
+    total: taskProgress.total,
+    colorClass: "bg-red-500",
+    trackClass: "bg-red-100",
+  },
+];
+
 const attendanceSummary = [
   { label: "Present Days", value: "22" },
   { label: "Absent Days", value: "2" },
@@ -49,6 +80,8 @@ const sidebarItems = [
 
 export default function StaffDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const completedSweep = (taskProgress.completed / taskProgress.total) * 360;
+  const pendingSweep = ((taskProgress.completed + taskProgress.pending) / taskProgress.total) * 360;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -281,6 +314,71 @@ export default function StaffDashboard() {
                     <p className="font-semibold text-slate-900">Rahul Sharma</p>
                     <p className="text-sm text-slate-500">rahul@gmail.com</p>
                     <p className="text-sm text-slate-500">Event Manager</p>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section className="grid grid-cols-1 gap-6 xl:grid-cols-1">
+              <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-slate-950">Task Progress</h2>
+                  <p className="mt-1 text-sm text-slate-500">A quick breakdown of your assigned work</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-center">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <div
+                      className="grid h-40 w-40 place-items-center rounded-full"
+                      style={{
+                        background: `conic-gradient(#16a34a 0deg ${completedSweep}deg, #f59e0b ${completedSweep}deg ${pendingSweep}deg, #ef4444 ${pendingSweep}deg 360deg)`,
+                      }}
+                    >
+                      <div className="grid h-[118px] w-[118px] place-items-center rounded-full bg-white text-center shadow-[0_8px_30px_rgba(15,23,42,0.08)]">
+                        <div>
+                          <p className="text-4xl font-extrabold text-slate-950">{taskProgress.total}</p>
+                          <p className="mt-1 text-sm text-slate-500">Total Tasks</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 text-sm">
+                      {taskProgressItems.map((item) => {
+                        const percent = taskProgress.total ? Math.round((item.value / item.total) * 100) : 0;
+                        return (
+                          <div key={item.label} className="flex items-center gap-3">
+                            <span className={`h-2.5 w-2.5 rounded-sm ${item.colorClass}`} />
+                            <span className="w-20 font-medium text-slate-600">{item.label}</span>
+                            <span className="text-slate-500">
+                              {item.value} ({percent}%)
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {taskProgressItems.map((item) => {
+                      const percent = taskProgress.total ? Math.round((item.value / item.total) * 100) : 0;
+
+                      return (
+                        <div key={item.label}>
+                          <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                            <span className="font-semibold text-slate-800">{item.label}</span>
+                            <span className="font-medium text-slate-500">
+                              {item.value} / {item.total} ({percent}%)
+                            </span>
+                          </div>
+                          <div className={`h-2 w-full overflow-hidden rounded-full ${item.trackClass}`}>
+                            <div
+                              className={`h-full rounded-full ${item.colorClass}`}
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </article>

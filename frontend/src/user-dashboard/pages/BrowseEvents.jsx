@@ -1,341 +1,182 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Filter,
-  Heart,
-  MapPin,
-  Search,
-} from "lucide-react";
-
+﻿import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../styles/components/Sidebar";
-import {
-  getClientDisplayName,
-  getClientInitial,
-  getCurrentClient,
-} from "../services/clientSession";
-import { getEvents } from "../services/userApi";
 import "../styles/dashboard.css";
+import "./BrowseEvents.css";
 
-const fallbackEvents = [
+const eventData = [
   {
     id: 1,
-    title: "Music Concert 2026",
-    category: "Music",
-    date: "May 25, 2026",
-    time: "7:00 PM",
-    location: "Auditorium Hall",
-    price: 45,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80",
+    title: "Wedding Celebration",
+    description: "Complete wedding planning package",
+    location: "Udupi",
+    guests: 500,
+    price: "₹2,00,000",
+    rating: "4.8/5",
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800",
   },
   {
     id: 2,
-    title: "Tech Conference",
-    category: "Tech",
-    date: "Jun 10, 2026",
-    time: "9:00 AM",
-    location: "Tech Park, New York",
-    price: 99,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
+    title: "Birthday Party",
+    description: "Fun and memorable birthday celebrations",
+    location: "Udupi",
+    guests: 100,
+    price: "₹50,000",
+    rating: "4.6/5",
+    image: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800",
   },
   {
     id: 3,
-    title: "Design Workshop",
-    category: "Workshop",
-    date: "Jun 18, 2026",
-    time: "2:00 PM",
-    location: "Creative Hub",
-    price: 35,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80",
+    title: "Corporate Event",
+    description: "Professional events for your business",
+    location: "Udupi",
+    guests: 300,
+    price: "₹1,50,000",
+    rating: "4.7/5",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800",
   },
   {
     id: 4,
-    title: "Food Festival 2026",
-    category: "Food & Drink",
-    date: "Jun 05, 2026",
-    time: "11:00 AM",
-    location: "Central Park",
-    price: 0,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=700&q=80",
+    title: "Conference",
+    description: "Conferences and seminars",
+    location: "Udupi",
+    guests: 1000,
+    price: "₹1,00,000",
+    rating: "4.5/5",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800",
   },
   {
     id: 5,
-    title: "Art Exhibition",
-    category: "Art & Culture",
-    date: "Jun 12, 2026",
-    time: "10:00 AM",
-    location: "Art Gallery",
-    price: 15,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=700&q=80",
+    title: "Concert",
+    description: "Live concerts and music events",
+    location: "Udupi",
+    guests: 2000,
+    price: "₹3,00,000",
+    rating: "4.9/5",
+    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800",
   },
   {
     id: 6,
-    title: "Sports Event Live",
-    category: "Sports",
-    date: "Jun 20, 2026",
-    time: "6:00 PM",
-    location: "Stadium Arena",
-    price: 60,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 7,
-    title: "Standup Comedy Night",
-    category: "Comedy",
-    date: "May 30, 2026",
-    time: "8:00 PM",
-    location: "City Theatre",
-    price: 25,
-    status: "Upcoming",
-    image: "https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=700&q=80",
-  },
-  {
-    id: 8,
-    title: "Online Marketing Webinar",
-    category: "Business",
-    date: "Jun 15, 2026",
-    time: "3:00 PM",
-    location: "Online Event",
-    price: 0,
-    status: "Online",
-    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=700&q=80",
+    title: "Exhibition",
+    description: "Exhibitions and trade shows",
+    location: "Udupi",
+    guests: 500,
+    price: "₹75,000",
+    rating: "4.4/5",
+    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800",
   },
 ];
 
-const categoryFilters = [
-  "All Categories",
-  "Music",
-  "Tech",
-  "Business",
-  "Workshop",
-  "Art & Culture",
-  "Sports",
-  "Food & Drink",
-  "Comedy",
-  "Others",
-];
+const typeOptions = ["All", "Wedding", "Birthday", "Corporate", "Conference", "Concert", "Exhibition"];
+const budgetOptions = ["All", "Below ₹50,000", "₹50,000 - ₹1,00,000", "Above ₹1,00,000"];
 
-const eventTypeFilters = [
-  { label: "Upcoming", count: 24, checked: true },
-  { label: "This Week", count: 8 },
-  { label: "This Month", count: 16 },
-  { label: "Free Events", count: 5 },
-  { label: "Online Events", count: 7 },
-];
+const parsePrice = (price) => Number(price.replace(/[₹,]/g, ""));
 
-const BrowseEvents = () => {
-  const currentClient = getCurrentClient();
-  const clientName = getClientDisplayName(currentClient);
-  const clientInitial = getClientInitial(currentClient);
-  const [events, setEvents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  const [location, setLocation] = useState("All Locations");
-  const [sortBy, setSortBy] = useState("earliest");
-  const [isLoading, setIsLoading] = useState(true);
+export default function BrowseEvents() {
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [budgetFilter, setBudgetFilter] = useState("All");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    getEvents()
-      .then(setEvents)
-      .catch(() => setEvents(fallbackEvents))
-      .finally(() => setIsLoading(false));
-  }, []);
+  const filteredEvents = eventData.filter((event) => {
+    const searchTerm = search.toLowerCase();
+    const matchesSearch =
+      event.title.toLowerCase().includes(searchTerm) ||
+      event.description.toLowerCase().includes(searchTerm);
 
-  const locations = useMemo(
-    () => ["All Locations", ...new Set(events.map((event) => event.location))],
-    [events]
-  );
+    const matchesType =
+      typeFilter === "All" || event.title.toLowerCase().includes(typeFilter.toLowerCase());
 
-  const filteredEvents = useMemo(() => {
-    return events
-      .filter((event) => {
-        const searchText = searchTerm.trim().toLowerCase();
-        const matchesSearch =
-          event.title.toLowerCase().includes(searchText) ||
-          event.category.toLowerCase().includes(searchText) ||
-          event.location.toLowerCase().includes(searchText);
-        const matchesCategory =
-          category === "All Categories" || event.category === category;
-        const matchesLocation =
-          location === "All Locations" || event.location === location;
+    const price = parsePrice(event.price);
+    const matchesBudget =
+      budgetFilter === "All" ||
+      (budgetFilter === "Below ₹50,000" && price < 50000) ||
+      (budgetFilter === "₹50,000 - ₹1,00,000" && price >= 50000 && price <= 100000) ||
+      (budgetFilter === "Above ₹1,00,000" && price > 100000);
 
-        return matchesSearch && matchesCategory && matchesLocation;
-      })
-      .sort((a, b) => {
-        if (sortBy === "price-low") return a.price - b.price;
-        if (sortBy === "price-high") return b.price - a.price;
-        return new Date(a.date) - new Date(b.date);
-      });
-  }, [events, searchTerm, category, location, sortBy]);
+    return matchesSearch && matchesType && matchesBudget;
+  });
 
   return (
     <div className="dashboard-container">
       <Sidebar />
 
-      <main className="main-content browse-content">
+      <main className="main-content">
         <header className="browse-topbar">
           <div>
             <h1>Browse Events</h1>
             <p>Client Dashboard &gt; Browse Events</p>
           </div>
-
-          <div className="profile-box">
-            <div>
-              <h4>{currentClient.email || "client@example.com"}</h4>
-              <p>Welcome back, {clientName}!</p>
-            </div>
-            <div className="avatar">{clientInitial}</div>
-          </div>
         </header>
 
-        <section className="browse-toolbar">
-          <div className="search-control">
-            <Search size={18} />
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search events, categories, or venues..."
-            />
-          </div>
-
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {categoryFilters.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-
-          <select value={location} onChange={(e) => setLocation(e.target.value)}>
-            {locations.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-
-          <button type="button" className="date-button">
-            <CalendarDays size={16} />
-            Date
-          </button>
-
-          <button type="button" className="filter-button">
-            <Filter size={16} />
-            Filters
-          </button>
-        </section>
-
-        <div className="browse-layout">
-          <aside className="filters-column">
-            <section className="filter-panel">
-              <h2>Categories</h2>
-              <div className="category-list">
-                {categoryFilters.map((item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    className={category === item ? "selected" : ""}
-                    onClick={() => setCategory(item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="filter-panel">
-              <h2>Event Type</h2>
-              <div className="event-type-list">
-                {eventTypeFilters.map((item) => (
-                  <label key={item.label}>
-                    <input type="checkbox" defaultChecked={item.checked} />
-                    <span>{item.label}</span>
-                    <small>{item.count}</small>
-                  </label>
-                ))}
-              </div>
-            </section>
-          </aside>
-
-          <section className="events-results">
-            <div className="results-header">
-              <p>{isLoading ? "Loading events..." : `${filteredEvents.length} Events Found`}</p>
-
-              <label>
-                Sort by:
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                  <option value="earliest">Date (Earliest)</option>
-                  <option value="price-low">Price (Low to High)</option>
-                  <option value="price-high">Price (High to Low)</option>
-                </select>
-              </label>
+        <section className="browse-page">
+          <div className="browse-header">
+            <div>
+              <h2>Find the perfect event package for your special occasion.</h2>
             </div>
 
-            <div className="browse-event-grid">
-              {filteredEvents.map((event) => (
-                <article className="browse-event-card" key={event.id}>
-                  <div className="event-image-wrap">
-                    <img src={event.image} alt={event.title} />
-                    <span className={event.status === "Online" ? "status-badge online" : "status-badge"}>
-                      {event.status}
-                    </span>
-                    <button type="button" aria-label={`Save ${event.title}`}>
-                      <Heart size={18} />
-                    </button>
+            <div className="browse-controls">
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                {typeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <select value={budgetFilter} onChange={(e) => setBudgetFilter(e.target.value)}>
+                {budgetOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="event-grid">
+            {filteredEvents.map((event) => (
+              <div className="event-card" key={event.id}>
+                <img src={event.image} alt={event.title} />
+                <div className="event-card-body">
+                  <div className="event-card-header">
+                    <div>
+                      <h3>{event.title}</h3>
+                      <p>{event.description}</p>
+                    </div>
+                    <span className="rating">{event.rating}</span>
                   </div>
 
-                  <div className="browse-event-body">
-                    <h3>{event.title}</h3>
+                  <div className="event-details">
+                    <div className="event-info-row">📍 {event.location}</div>
+                    <div className="event-info-row">👥 Up to {event.guests} Guests</div>
+                    <div className="event-info-row">💰 Starting at {event.price}</div>
+                  </div>
 
-                    <div className="browse-event-meta">
-                      <span>
-                        <CalendarDays size={14} />
-                        {event.date}
-                      </span>
-                      <span>
-                        <Clock size={14} />
-                        {event.time}
-                      </span>
-                      <span>
-                        <MapPin size={14} />
-                        {event.location}
-                      </span>
-                    </div>
-
-                    <div className="event-card-footer">
-                      <span className="category-pill">{event.category}</span>
-                      <strong>{event.price === 0 ? "Free" : `$${event.price}`}</strong>
-                    </div>
-
-                    <button type="button" className="details-button">
+                  <div className="event-card-actions">
+                    <button className="btn details-btn" onClick={() => navigate("/client/event-request")}>Request Booking</button>
+                    <button
+                      className="btn request-btn"
+                      onClick={() => navigate(`/user/event-details/${event.id}`, { state: { event } })}
+                    >
                       View Details
                     </button>
                   </div>
-                </article>
-              ))}
-            </div>
-
-            <div className="pagination">
-              <button type="button">
-                <ChevronLeft size={16} />
-              </button>
-              <button type="button" className="current">1</button>
-              <button type="button">2</button>
-              <button type="button">3</button>
-              <button type="button">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </section>
-        </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );
-};
-
-export default BrowseEvents;
+}
