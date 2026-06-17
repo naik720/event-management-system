@@ -57,11 +57,20 @@ function EventManagementSidebar() {
         ))}
       </nav>
 
+      {/* Bottom Actions Footer */}
       <div className="space-y-2 pt-4 border-t border-indigo-700/50 mt-auto">
-        <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-700/60 transition text-indigo-100 flex items-center gap-2">
+        {/* CHANGED PATH: Matches the child route defined inside App.jsx */}
+        <button
+          onClick={() => navigate("/user/event-management/help-centre")}
+          className={`w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-2 ${isActive("/user/event-management/help-centre")
+              ? "bg-indigo-600 font-semibold shadow-inner text-white"
+              : "hover:bg-indigo-700/60 text-indigo-100"
+            }`}
+        >
           <HelpCircle size={18} />
           Help Center
         </button>
+
         <button
           onClick={handleLogout}
           className="w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-700/60 transition text-indigo-100 flex items-center gap-2"

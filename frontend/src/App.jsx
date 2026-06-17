@@ -36,6 +36,9 @@ import EventDashboard from "./pages/events/EventDashboard";
 import EventsPage from "./pages/events/EventsPage";
 import CalendarPage from "./pages/events/CalendarPage";
 
+// New Help Centre Component
+import HelpCentre from "./pages/events/HelpCentre";
+
 // Route Guard Components
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute";
 
@@ -43,7 +46,6 @@ function getAuthRole() {
   return localStorage.getItem("userRole") || "client";
 }
 
-// Smart Protected Route Guard for Users
 function UserProtectedRoute({ children }) {
   const loggedInUser = localStorage.getItem("loggedInUser");
   const token = localStorage.getItem("token");
@@ -382,6 +384,8 @@ function App() {
         <Route path="categories" element={<EventCategory />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="analytics" element={<Payments />} />
+        {/* Strictly Nested Here */}
+        <Route path="help-centre" element={<HelpCentre />} />
       </Route>
 
       {/* --- Admin Panel Routes --- */}

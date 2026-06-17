@@ -84,6 +84,9 @@ function EventManagementDashboard() {
     location.pathname === "/user/event-management/" ||
     location.pathname === "/user/event-management/dashboard";
 
+  // Helper flag to handle active styles for the Help Centre route
+  const isHelpCentreActive = location.pathname === "/user/event-management/help-centre";
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* --- Sidebar Navigation Framework --- */}
@@ -128,10 +131,18 @@ function EventManagementDashboard() {
         </nav>
 
         <div className="space-y-2 pt-4 border-t border-[#151b30]">
-          <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2">
-            <HelpCircle size={18} />
+          {/* UPDATED: Changed from a generic button to a fully wired NavLink component */}
+          <NavLink
+            to="/user/event-management/help-centre"
+            className={`w-full flex items-center px-4 py-3 rounded-lg transition ${isHelpCentreActive
+                ? "bg-[#ea580c] font-semibold text-white"
+                : "hover:bg-[#252f4c] text-[#9aa4b7] hover:text-white"
+              }`}
+          >
+            <HelpCircle size={18} className="mr-3" />
             Help Center
-          </button>
+          </NavLink>
+
           <button
             onClick={handleLogout}
             className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2"
