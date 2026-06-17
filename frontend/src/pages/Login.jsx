@@ -4,19 +4,6 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 import { saveClientProfile } from "../user-dashboard/services/clientSession";
 
-const DEMO_ACCOUNTS = {
-  vendor: {
-    email: "vendor@gmail.com",
-    password: "vedoor@123",
-    route: "/vendor/dashboard",
-  },
-  staff: {
-    email: "staff@gmail.com",
-    password: "staff@123",
-    route: "/staff/dashboard",
-  },
-};
-
 function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -58,32 +45,6 @@ function Login() {
     try {
       const enteredEmail = formData.email.trim().toLowerCase();
       const enteredPassword = formData.password;
-      const demoAccount = Object.entries(DEMO_ACCOUNTS).find(([, account]) => {
-        return account.email === enteredEmail && account.password === enteredPassword;
-      });
-
-      if (demoAccount) {
-        const [role, account] = demoAccount;
-        const loginTime = new Date().toISOString();
-        const demoUser = {
-          email: account.email,
-          role,
-          name: role === "vendor" ? "Vendor Account" : "Staff Account",
-          lastLogin: loginTime,
-          memberSince: loginTime,
-        };
-
-        localStorage.setItem("token", `demo-${role}-token`);
-        localStorage.setItem("loggedInUser", JSON.stringify(demoUser));
-        localStorage.setItem("user", JSON.stringify(demoUser));
-        localStorage.setItem("userRole", role);
-
-        setTimeout(() => {
-          navigate(account.route);
-        }, 100);
-
-        return;
-      }
 
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
@@ -113,7 +74,6 @@ function Login() {
         // 🚀 Redirect securely to the correct dashboard routes
         setTimeout(() => {
           if (fromEventManagement) {
-            // Updated to point to your actual event management path!
             navigate("/user/event-management");
           } else {
             navigate("/user/dashboard");
@@ -156,7 +116,6 @@ function Login() {
           // 🚀 Redirect securely to the correct dashboard routes (Google Login)
           setTimeout(() => {
             if (fromEventManagement) {
-              // Updated to point to your actual event management path!
               navigate("/user/event-management");
             } else {
               navigate("/user/dashboard");
@@ -226,7 +185,7 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter password"
-              className="w-full p-4 rounded-xl mb-3 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
+              className="w-full p-4 rounded-xl mb-6 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
             />
 
             {error && (
@@ -257,16 +216,6 @@ function Login() {
               </span>
             </div>
           </form>
-
-          <div className="mt-6 rounded-2xl border border-white/15 bg-black/20 p-4 text-sm text-gray-200">
-            <p className="font-semibold text-white">Demo access</p>
-            <p className="mt-1">
-              Vendor: <span className="font-mono">vendor@gmail.com / vedoor@123</span>
-            </p>
-            <p className="mt-1">
-              Staff: <span className="font-mono">staff@gmail.com / staff@123</span>
-            </p>
-          </div>
         </div>
       </div>
     </main>
