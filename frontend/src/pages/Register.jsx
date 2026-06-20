@@ -48,9 +48,11 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        // FIXED: Included phone in the payload body stringify block
         body: JSON.stringify({
           name: formData.username.trim(),
           email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim(),
           password: formData.password,
         }),
       });
@@ -58,7 +60,7 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registration successful. Please login with your email and password.");
+        alert("Registration successful! Please check your email to verify your account.");
         navigate("/login");
       } else {
         setError(data.message || "Registration failed. Please try again.");
@@ -67,7 +69,7 @@ const Register = () => {
       console.error("Registration error:", error);
       setError("Failed to connect to server. Please check if backend is running.");
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -121,11 +123,10 @@ const Register = () => {
                     key={role}
                     type="button"
                     onClick={() => setFormData({ ...formData, role })}
-                    className={`py-1.5 px-1 text-[11px] font-medium rounded-lg transition-all truncate ${
-                      formData.role === role
-                        ? "bg-blue-600 text-white font-semibold"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`py-1.5 px-1 text-[11px] font-medium rounded-lg transition-all truncate ${formData.role === role
+                      ? "bg-blue-600 text-white font-semibold"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     {role}
                   </button>

@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import AdminLogin from "./admin/pages/AdminLogin";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
+import VerifyEmail from "./pages/VerifyEmail"; // --- IMPORTED NEW PAGE LINK HERE ---
 
 // Main User Dashboard Components
 import Dashboard from "./user-dashboard/pages/Dashboard";
@@ -95,6 +96,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      {/* --- EMAIL CONFIRMATION LINK PUBLIC LANDING ROUTE --- */}
+      <Route path="/verify-email" element={<VerifyEmail />} />
+
       <Route
         path="/staff/dashboard"
         element={
@@ -384,7 +389,6 @@ function App() {
         <Route path="categories" element={<EventCategory />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="analytics" element={<Payments />} />
-        {/* Strictly Nested Here */}
         <Route path="help-centre" element={<HelpCentre />} />
       </Route>
 
