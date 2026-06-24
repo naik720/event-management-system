@@ -7,7 +7,8 @@ import {
   Calendar as CalendarIcon,
   Layers,
   HelpCircle,
-  FolderOpen
+  FolderOpen,
+  Info
 } from "lucide-react";
 
 // Layout architecture assets
@@ -24,6 +25,7 @@ import { getBookings } from "../services/userApi";
 // --- EVENT MANAGEMENT EMBEDDED INFRASTRUCTURE COMPONENTS ---
 import EventDashboard from "../../pages/events/EventDashboard";
 import EventsPage from "../../pages/events/EventsPage";
+import EventDetails from "../../pages/events/EventDetails"; // <-- Added missing page from directory
 import ResourcesPage from "../../pages/events/ResourcesPage";
 import EventCategory from "../../pages/events/EventCategory";
 import CalendarPage from "../../pages/events/CalendarPage";
@@ -113,6 +115,12 @@ const Dashboard = () => {
             className={activeSubView === "events" ? "selected" : ""}
           >
             📅 Events Hub
+          </button>
+          <button
+            onClick={() => setActiveSubView("eventDetails")}
+            className={activeSubView === "eventDetails" ? "selected" : ""}
+          >
+            🔍 Event Details
           </button>
           <button
             onClick={() => setActiveSubView("resources")}
@@ -219,6 +227,7 @@ const Dashboard = () => {
           <div className="ems-tailwind-isolate">
             {activeSubView === "eventDashboard" && <EventDashboard />}
             {activeSubView === "events" && <EventsPage />}
+            {activeSubView === "eventDetails" && <EventDetails />}
             {activeSubView === "resources" && <ResourcesPage />}
             {activeSubView === "categories" && <EventCategory />}
             {activeSubView === "calendar" && <CalendarPage />}
