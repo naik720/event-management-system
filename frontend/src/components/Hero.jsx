@@ -5,8 +5,17 @@ function Hero() {
   const navigate = useNavigate();
 
   const handleCreateEvent = () => {
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    const token = localStorage.getItem("token");
 
-    navigate('/login?from=event-management');
+    // Check if the user is authenticated
+    if (loggedInUser && token) {
+      // Directly go to the event management dashboard
+      navigate('/user/event-management/dashboard');
+    } else {
+      // Redirect to login page if unauthenticated
+      navigate('/login?from=event-management');
+    }
   };
 
   return (
@@ -17,9 +26,7 @@ function Hero() {
           "url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30')",
       }}
     >
-
       <div className="absolute inset-0 bg-black/60"></div>
-
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-4">
         <h1 className="text-6xl font-extrabold max-w-4xl leading-tight">
