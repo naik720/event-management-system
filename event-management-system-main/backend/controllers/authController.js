@@ -188,7 +188,54 @@ exports.login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Intercept demo client login
+    if (normalizedEmail === 'client@gmail.com' && password === 'client@123') {
+      return res.json({
+        token: 'mock-client-token',
+        user: {
+          id: 'mock-client-id',
+          _id: 'mock-client-id',
+          name: 'Demo Client User',
+          email: 'client@gmail.com',
+          role: 'client',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    // Intercept demo vendor login
+    if (normalizedEmail === 'vendor@gmail.com' && password === 'vendor@123') {
+      return res.json({
+        token: 'mock-vendor-token',
+        user: {
+          id: 'mock-vendor-id',
+          _id: 'mock-vendor-id',
+          name: 'Raj Catering Services',
+          email: 'vendor@gmail.com',
+          role: 'vendor',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    // Intercept demo staff login
+    if (normalizedEmail === 'staff@gmail.com' && password === 'staff@123') {
+      return res.json({
+        token: 'mock-staff-token',
+        user: {
+          id: 'mock-staff-id',
+          _id: 'mock-staff-id',
+          name: 'Rahul Sharma',
+          email: 'staff@gmail.com',
+          role: 'staff',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }

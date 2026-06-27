@@ -30,7 +30,7 @@ const chartColors = {
 const priceAlerts = [
   {
     title: "Tech Conference",
-    text: "Price dropped by $50",
+    text: "Price dropped by ₹500",
     image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
   },
   {

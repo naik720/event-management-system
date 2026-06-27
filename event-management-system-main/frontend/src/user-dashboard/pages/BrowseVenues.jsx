@@ -210,7 +210,7 @@ const BrowseVenues = () => {
 
                     <div className="event-card-footer">
                       <span className="category-pill">{venue.type}</span>
-                      <strong>{venue.price ? `$${venue.price}` : "Request quote"}</strong>
+                      <strong>{venue.price ? `₹${venue.price.toLocaleString('en-IN')}` : "Request quote"}</strong>
                     </div>
 
                     <p className="event-description">{venue.description?.slice(0, 110) || "Comfortable venue with flexible capacity and amenities."}</p>

@@ -50,7 +50,7 @@ const WishlistEventCard = ({ event, onRemove, onView }) => {
         </div>
 
         <div className="wishlist-card-footer">
-          <strong>{event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}</strong>
+          <strong>{event.price === 0 ? "Free" : `₹${event.price.toLocaleString('en-IN')}`}</strong>
           <button type="button" className="details-button" onClick={() => onView && onView(event)}>
             View Details
           </button>
