@@ -31,10 +31,15 @@ button {
   font: inherit;
 }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .dashboard-container {
   display: flex;
   background: var(--color-bg-main);
   min-height: 100vh;
+<<<<<<< Updated upstream
 }
 
 .sidebar {
@@ -52,6 +57,51 @@ button {
   max-height: 100vh;
   overflow: hidden;
   flex-shrink: 0;
+=======
+}
+
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, var(--color-sidebar-bg) 0%, var(--color-sidebar-gradient-end) 100%);
+  background-color: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  flex-shrink: 0;
+=======
+.sidebar{
+  width:272px;
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, .18), transparent 26%),
+    linear-gradient(180deg,#07111f 0%,#10213d 100%);
+  background-color:#07111f;
+  color:white;
+  padding:20px 18px 18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  min-height:100vh;
+  max-height:100vh;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.sidebar-content{
+  overflow-y:auto;
+  padding-right:4px;
+  display:grid;
+  gap:18px;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .sidebar-content {
@@ -63,6 +113,7 @@ button {
   width: 8px;
 }
 
+<<<<<<< Updated upstream
 .sidebar-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, .18);
   border-radius: 999px;
@@ -136,6 +187,191 @@ button {
   font-weight: 600;
 }
 
+=======
+<<<<<<< Updated upstream
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .18);
+  border-radius: 999px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.logo-section button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  color: var(--color-sidebar-text);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.logo-section button:hover {
+  color: var(--color-sidebar-text-hover);
+}
+
+.logo-section h2 {
+  color: var(--color-secondary-orange);
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.logo-section p {
+  font-size: 12px;
+  color: var(--color-sidebar-text);
+  margin-top: 7px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menu {
+  list-style: none;
+  margin-top: 42px;
+}
+
+.menu li {
+  padding: 13px 14px;
+  margin-bottom: 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-sidebar-text);
+  font-size: 14px;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-weight: 400;
+}
+
+.menu li:hover {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--color-sidebar-text-hover);
+=======
+.sidebar-brand{
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(15,23,42,.42);
+  border-radius:18px;
+  padding:16px;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  box-shadow:0 18px 40px rgba(2,6,23,.22);
+}
+
+.sidebar-brand-mark{
+  width:48px;
+  height:48px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#f97316,#f59e0b);
+  color:#fff;
+  font-weight:900;
+  font-size:15px;
+  letter-spacing:.08em;
+  flex-shrink:0;
+}
+
+.sidebar-brand-copy{
+  min-width:0;
+}
+
+.sidebar-brand-copy h2{
+  color:#fff;
+  font-size:20px;
+  line-height:1.15;
+}
+
+.sidebar-brand-copy p{
+  font-size:12px;
+  color:#aab5c5;
+  margin-top:8px;
+  line-height:1.5;
+}
+
+.sidebar-section-label{
+  color:#94a3b8;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  padding:0 4px;
+}
+
+.menu{
+  list-style:none;
+  margin-top:0;
+  display:grid;
+  gap:8px;
+}
+
+.menu li{
+  padding:12px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#cbd5e1;
+  font-size:14px;
+  transition:background .2s ease,color .2s ease,transform .2s ease;
+}
+
+.menu li:hover{
+  background:rgba(245,158,11,.14);
+  color:white;
+  transform:translateX(2px);
+}
+
+.active{
+  background:linear-gradient(135deg,#f97316,#f59e0b);
+  color:white!important;
+  box-shadow:0 10px 24px rgba(249,115,22,.24);
+}
+
+.sidebar-footer{
+  padding-top:16px;
+}
+
+.logout{
+  width:100%;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(15,23,42,.28);
+  padding:14px 16px;
+  border-radius:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#cbd5e1;
+  font-size:14px;
+  justify-content:flex-start;
+  transition:background .2s ease,color .2s ease,border-color .2s ease,transform .2s ease;
+}
+
+.logout:hover{
+  background:rgba(249,115,22,.14);
+  color:#fff;
+  border-color:rgba(249,115,22,.35);
+  transform:translateY(-1px);
+>>>>>>> Stashed changes
+}
+
+.active {
+  background: linear-gradient(135deg, var(--color-primary-orange), var(--color-secondary-orange));
+  color: var(--color-sidebar-text-hover) !important;
+  font-weight: 600;
+}
+
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .logout {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   padding: 22px 14px 4px;
@@ -147,10 +383,51 @@ button {
   font-size: 14px;
   transition: color 0.2s ease;
   font-weight: 400;
+<<<<<<< Updated upstream
 }
 
 .logout:hover {
   color: var(--color-sidebar-text-hover);
+=======
+}
+
+.logout:hover {
+  color: var(--color-sidebar-text-hover);
+=======
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  background:white;
+  padding:18px 22px;
+  margin:0 -24px 24px;
+  box-shadow:0 1px 16px rgba(15,23,42,.06);
+}
+
+.topbar-copy{
+  min-width:0;
+}
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-left:auto;
+}
+
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.topbar h1{
+  font-size:24px;
+  line-height:1.1;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .main-content {
@@ -170,10 +447,15 @@ button {
   box-shadow: 0 1px 16px var(--color-shadow);
 }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .topbar h1 {
   font-size: 24px;
   line-height: 1.1;
   font-weight: 700;
+<<<<<<< Updated upstream
 }
 
 .topbar p {
@@ -212,6 +494,80 @@ button {
   justify-content: center;
   color: var(--color-bg-white);
   font-weight: bold;
+=======
+}
+
+.topbar p {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 400;
+}
+
+.profile-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: right;
+}
+
+.profile-box h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.profile-box p {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  background: var(--color-secondary-orange);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-bg-white);
+  font-weight: bold;
+=======
+.profile-meta h4{
+  font-size:13px;
+}
+
+.profile-meta p{
+  font-size:12px;
+  color:#64748b;
+}
+
+.avatar{
+  width:45px;
+  height:45px;
+  background:#f59e0b;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-weight:bold;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.avatar-image{
+  background:#e2e8f0;
+}
+
+.avatar-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .summary-panel,
@@ -350,6 +706,7 @@ button {
 .vertical-list {
   display: grid;
   gap: 12px;
+<<<<<<< Updated upstream
 }
 
 .event-card {
@@ -373,6 +730,47 @@ button {
 
 .event-card-content {
   padding: 10px;
+=======
+}
+
+<<<<<<< Updated upstream
+.event-card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-bg-white);
+  transition: box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  box-shadow: 0 8px 28px var(--color-shadow);
+}
+
+.event-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+.event-card-content {
+  padding: 10px;
+=======
+.event-card-image-wrap{
+  overflow:hidden;
+}
+
+.event-card-image-wrap img{
+  width:100%;
+  height:110px;
+  object-fit:cover;
+  display:block;
+}
+
+.event-card-content{
+  padding:12px 14px 14px;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .event-card h3,
@@ -399,6 +797,10 @@ button {
   font-weight: 400;
 }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .event-card-compact {
   display: grid;
   grid-template-columns: 104px 1fr;
@@ -407,6 +809,7 @@ button {
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-bg-white);
+<<<<<<< Updated upstream
 }
 
 .event-card-compact img {
@@ -437,6 +840,74 @@ button {
   white-space: nowrap;
 }
 
+=======
+}
+
+.event-card-compact img {
+  height: 100%;
+}
+
+.event-card-compact .event-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+=======
+.event-card-compact{
+  display:grid;
+  grid-template-columns:132px minmax(0,1fr) 220px;
+  min-height:110px;
+}
+
+.event-card-compact .event-card-image-wrap{
+  height:100%;
+}
+
+.event-card-compact .event-card-image-wrap img{
+  height:100%;
+  min-height:110px;
+}
+
+.event-card-compact .event-card-content{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+}
+
+.event-card-copy{
+  min-width:0;
+}
+
+.event-card-actions{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:10px;
+  min-width:0;
+>>>>>>> Stashed changes
+}
+
+.event-card-compact .event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 14px;
+}
+
+.event-tag {
+  background: #ffedd5;
+  color: var(--color-primary-orange);
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .booking-card {
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -447,6 +918,7 @@ button {
   align-items: center;
   gap: 12px;
   background: var(--color-bg-white);
+<<<<<<< Updated upstream
 }
 
 .booking-card img {
@@ -458,6 +930,52 @@ button {
 
 .booking-card p {
   margin-top: 8px;
+=======
+}
+
+.booking-card img {
+  width: 64px;
+  height: 54px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+.booking-card p {
+  margin-top: 8px;
+=======
+.booking-card{
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  min-height:76px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:86px minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+}
+
+.booking-card-image-wrap{
+  width:86px;
+  height:64px;
+  border-radius:8px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.booking-card-image-wrap img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.booking-card-copy{
+  min-width:0;
+}
+
+.booking-card p{
+  margin-top:8px;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .booking-status {
@@ -571,12 +1089,29 @@ button {
   }
 
   .event-card-compact,
+<<<<<<< Updated upstream
   .booking-card {
     grid-template-columns: 80px 1fr;
+=======
+<<<<<<< Updated upstream
+  .booking-card {
+    grid-template-columns: 80px 1fr;
+=======
+  .booking-card{
+    grid-template-columns:92px minmax(0,1fr);
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   }
 
   .event-card-compact .event-card-content {
     display: block;
+<<<<<<< Updated upstream
+=======
+  }
+
+  .event-card-actions{
+    margin-top:10px;
+>>>>>>> Stashed changes
   }
 
   .event-tag,
@@ -878,6 +1413,10 @@ button {
   font-size: 15px;
 }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 .details-button {
   width: 100%;
   height: 36px;
@@ -888,6 +1427,22 @@ button {
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
+<<<<<<< Updated upstream
+=======
+=======
+.details-button{
+  width:100%;
+  min-height:40px;
+  border:1px solid #fed7aa;
+  color:#f97316;
+  background:#fff7ed;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+  padding:0 14px;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 .details-button:hover {
