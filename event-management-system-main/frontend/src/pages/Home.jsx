@@ -382,9 +382,12 @@ function Home() {
                       <p className="mt-1 text-sm font-semibold text-slate-950">₹{event.price}</p>
                     </div>
                   </div>
-                  <button className="mt-5 w-full rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-pink-400">
+                  <Link
+                    to="/login"
+                    className="mt-5 block w-full rounded-xl bg-pink-500 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-pink-400"
+                  >
                     Book Now
-                  </button>
+                  </Link>
                 </div>
               </article>
             ))}
