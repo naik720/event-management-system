@@ -14,25 +14,6 @@ const Topbar = ({ title = "Client Dashboard", subtitle, actions = null }) => {
   const pageSubtitle = subtitle || `${currentClient.role || "Client"} module`;
 
   return (
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-    <div className="topbar-unified">
-      <div>
-        <h1>Client Dashboard</h1>
-        <p>{currentClient.role || "Client"} module</p>
-      </div>
-
-      <div className="profile-box-unified">
-        <div>
-          <h4>{clientEmail}</h4>
-          <p>Welcome back, {clientName}!</p>
-        </div>
-
-        <div className="avatar-unified">
-          {clientInitial}
-=======
     <div className="topbar">
       <div className="topbar-copy">
         <h1>{title}</h1>
@@ -59,7 +40,6 @@ const Topbar = ({ title = "Client Dashboard", subtitle, actions = null }) => {
               </div>
             )}
           </div>
->>>>>>> Stashed changes
         </div>
       </div>
     </div>

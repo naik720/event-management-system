@@ -39,7 +39,10 @@ import {
   ShieldCheck,
   Coffee,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
+
+// Existing Module Components
 import VenueDashboard from "../venue-management/pages/VenueDashboard";
 import AddVenue from "../venue-management/pages/AddVenue";
 import AllVenues from "../venue-management/pages/AllVenues";
@@ -50,12 +53,25 @@ import VenueDetails from "../venue-management/pages/VenueDetails";
 import AvailabilityCalendar from "../venue-management/pages/AvailabilityCalendar";
 import BillingDashboard from "../venue-management/pages/BillingDashboard";
 
+// --- RE-INTEGRATED EVENT MANAGEMENT MODULE INFRASTRUCTURE PAGES ---
+import EventDashboard from "../../pages/events/EventDashboard";
+import EventsPage from "../../pages/events/EventsPage";
+import EventDetails from "../../pages/events/EventDetails";
+import ResourcesPage from "../../pages/events/ResourcesPage";
+import EventCategory from "../../pages/events/EventCategory";
+import CalendarPage from "../../pages/events/CalendarPage";
+import HelpCentre from "../../pages/events/HelpCentre";
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Navigation Accordion Toggles
   const [venueOpen, setVenueOpen] = useState(location.pathname.startsWith("/admin/venue-management"));
+  const [eventMgmtOpen, setEventMgmtOpen] = useState(false);
+
   const [staffSubTab, setStaffSubTab] = useState("staff-management");
   const [isAddStaff, setIsAddStaff] = useState(false);
   const [editingStaffId, setEditingStaffId] = useState(null);
@@ -99,13 +115,22 @@ function AdminDashboard() {
   useEffect(() => {
     if (location.pathname.startsWith("/admin/venue-management")) {
       setVenueOpen(true);
+      if (Object.keys(eventSubviewsMap).includes(activeTab)) {
+        setActiveTab("overview");
+      }
+    } else {
+      setVenueOpen(false);
     }
+
     if (location.pathname.startsWith("/admin/vendor-management")) {
       setActiveTab("staff");
       setStaffSubTab("vendor-management");
     }
+
     if (location.pathname === "/admin" || location.pathname === "/admin/dashboard") {
-      setActiveTab("overview");
+      if (!Object.keys(eventSubviewsMap).includes(activeTab)) {
+        setActiveTab("overview");
+      }
     }
   }, [location.pathname]);
 
@@ -164,6 +189,16 @@ function AdminDashboard() {
     { key: "maintenance", label: "Maintenance Records" },
     { key: "venue-revenue", label: "Venue Revenue" },
     { key: "billing", label: "Billing Dashboard" },
+  ];
+
+  const eventManagementMenu = [
+    { key: "event-dashboard", label: "Workspace Matrix" },
+    { key: "events-hub", label: "Events Hub" },
+    { key: "event-details", label: "Event Details" },
+    { key: "resources", label: "Allocation Resources" },
+    { key: "categories", label: "Classifications" },
+    { key: "calendar", label: "Scheduler View" },
+    { key: "help-centre", label: "Info Centre" },
   ];
 
   const getVendorInitials = (name) =>
@@ -415,23 +450,35 @@ function AdminDashboard() {
     "/admin/venue-management/billing": "Billing Dashboard",
   };
 
+  const eventSubviewsMap = {
+    "event-dashboard": "Event Management Workspace Matrix",
+    "events-hub": "Event Management Events Hub",
+    "event-details": "Event Management Details Summary",
+    "resources": "Event Management Resource Allocation",
+    "categories": "Event Management Classifications",
+    "calendar": "Event Management Scheduler Calendar",
+    "help-centre": "Event Management Information Centre",
+  };
+
   const pageTitle = location.pathname.startsWith("/admin/venue-management") || location.pathname.startsWith("/admin/vendor-management")
     ? routeTitles[location.pathname] || (location.pathname.startsWith("/admin/vendor-management") ? "Vendor Management" : "Venue Management")
-    : activeTab === "events"
-      ? "Manage Events"
-      : activeTab === "clients"
-        ? "Manage Clients"
-        : activeTab === "staff"
-          ? "Staff & Vendors Management"
-          : activeTab === "bookings"
-            ? "Bookings Dashboard"
-            : activeTab === "payments"
-              ? "Payment Ledger"
-              : activeTab === "reports"
-                ? "Reports"
-                : activeTab === "settings"
-                  ? "System Settings"
-                  : "Dashboard Overview";
+    : eventSubviewsMap[activeTab]
+      ? eventSubviewsMap[activeTab]
+      : activeTab === "events"
+        ? "Manage Events"
+        : activeTab === "clients"
+          ? "Manage Clients"
+          : activeTab === "staff"
+            ? "Staff & Vendors Management"
+            : activeTab === "bookings"
+              ? "Bookings Dashboard"
+              : activeTab === "payments"
+                ? "Payment Ledger"
+                : activeTab === "reports"
+                  ? "Reports"
+                  : activeTab === "settings"
+                    ? "System Settings"
+                    : "Dashboard Overview";
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -454,110 +501,136 @@ function AdminDashboard() {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
-          <div className="space-y-2">
-            {[
-              { id: "overview", label: "Dashboard", icon: Calendar },
-              { id: "events", label: "Manage Events", icon: Calendar },
-              { id: "clients", label: "Manage Clients", icon: Users },
-              { id: "staff", label: "Staff & Vendors", icon: Users },
-            ].map((item) => (
-              item.id === "staff" ? (
-                <React.Fragment key={item.id}>
-                  <button
-                    onClick={() => {
-                      setActiveTab("staff");
-                      setStaffSubTab("staff-management");
-                      navigate("/admin/dashboard");
-                    }}
-                    className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "staff" && !location.pathname.startsWith("/admin/venue-management")
-                      ? "bg-amber-600 text-white"
-                      : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <item.icon size={20} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </div>
-                    {sidebarOpen && <ChevronDown size={16} />}
-                  </button>
-                  {sidebarOpen && activeTab === "staff" && (
-                    <div className="ml-6 mt-2 space-y-1 border-l border-gray-700 pl-3">
-                      <button
-                        onClick={() => {
-                          setActiveTab("staff");
-                          setStaffSubTab("staff-management");
-                          navigate("/admin/dashboard");
-                        }}
-                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${staffSubTab === "staff-management"
-                          ? "bg-gray-700 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                          }`}
-                      >
-                        Staff Management
-                      </button>
-                      <button
-                        onClick={() => {
-                          setActiveTab("staff");
-                          setStaffSubTab("vendor-management");
-                          setVendorDraft(null);
-                          setVendorEditingId(null);
-                          navigate("/admin/vendor-management/overview");
-                        }}
-                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname.startsWith("/admin/vendor-management") || staffSubTab === "vendor-management"
-                          ? "bg-gray-700 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                          }`}
-                      >
-                        Vendor Management
-                      </button>
-                    </div>
-                  )}
-                </React.Fragment>
-              ) : (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    navigate("/admin/dashboard");
-                  }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
-                    ? "bg-amber-600 text-white"
-                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                    }`}
-                >
-                  <item.icon size={20} />
-                  {sidebarOpen && <span>{item.label}</span>}
-                </button>
-              )
-            ))}
-          </div>
+        {/* --- SIDEBAR LIST VIEW SCROLL LAYER OVERWRITE --- */}
+        <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
 
-          <div className="space-y-2">
-            {sidebarOpen && <div className="px-4 text-xs uppercase tracking-wider text-gray-500">Venue Management</div>}
+          {/* Main Core Links Group */}
+          <button
+            onClick={() => {
+              setActiveTab("overview");
+              navigate("/admin/dashboard");
+            }}
+            className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === "overview" && !location.pathname.startsWith("/admin/venue-management") && !Object.keys(eventSubviewsMap).includes(activeTab)
+              ? "bg-amber-600 text-white"
+              : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+          >
+            <Calendar size={20} />
+            {sidebarOpen && <span>Dashboard</span>}
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("events");
+              navigate("/admin/dashboard");
+            }}
+            className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === "events"
+              ? "bg-amber-600 text-white"
+              : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+          >
+            <Calendar size={20} />
+            {sidebarOpen && <span>Manage Events</span>}
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("clients");
+              navigate("/admin/dashboard");
+            }}
+            className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === "clients"
+              ? "bg-amber-600 text-white"
+              : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+          >
+            <Users size={20} />
+            {sidebarOpen && <span>Manage Clients</span>}
+          </button>
+
+          {/* Staff & Vendors Accordion dropdown */}
+          <React.Fragment>
             <button
               onClick={() => {
-                setVenueOpen((v) => !v);
-                navigate("/admin/venue-management/overview");
+                setActiveTab("staff");
+                setStaffSubTab("staff-management");
+                navigate("/admin/dashboard");
               }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname.startsWith("/admin/venue-management")
+              className={`w-full flex items-center justify-between space-x-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === "staff" && !location.pathname.startsWith("/admin/venue-management")
                 ? "bg-amber-600 text-white"
                 : "text-gray-400 hover:bg-gray-700 hover:text-white"
                 }`}
             >
-              <Store size={20} />
-              {sidebarOpen && <span>Venue Management</span>}
-              {sidebarOpen && <span className="ml-auto">{venueOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>}
+              <div className="flex items-center space-x-3">
+                <Users size={20} />
+                {sidebarOpen && <span>Staff & Vendors</span>}
+              </div>
+              {sidebarOpen && <span className="ml-auto">{activeTab === "staff" ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>}
             </button>
-            {sidebarOpen && venueOpen && (
-              <div className="ml-4 mt-2 space-y-1 border-l border-gray-700 pl-3">
-                {venueMenu.map((item) => (
+            {sidebarOpen && activeTab === "staff" && (
+              <div className="ml-4 mt-1 space-y-1 border-l border-gray-700 pl-3">
+                <button
+                  onClick={() => {
+                    setActiveTab("staff");
+                    setStaffSubTab("staff-management");
+                    navigate("/admin/dashboard");
+                  }}
+                  className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${staffSubTab === "staff-management" ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700"}`}
+                >
+                  Staff Management
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab("staff");
+                    setStaffSubTab("vendor-management");
+                    setVendorDraft(null);
+                    setVendorEditingId(null);
+                    navigate("/admin/vendor-management/overview");
+                  }}
+                  className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname.startsWith("/admin/vendor-management") || staffSubTab === "vendor-management"
+                    ? "bg-gray-700 text-white"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    }`}
+                >
+                  Vendor Management
+                </button>
+              </div>
+            )}
+          </React.Fragment>
+
+          {/* --- MODULE HEADER --- */}
+          {sidebarOpen && <div className="px-4 text-xs font-bold uppercase tracking-wider text-gray-500 pt-4">Modules</div>}
+
+          {/* --- RE-ARRANGED: EVENT MANAGEMENT MAIN SIDEBAR ENTRY COMPONENT --- */}
+          <React.Fragment>
+            <button
+              onClick={() => {
+                setEventMgmtOpen((v) => !v);
+                setActiveTab("event-dashboard");
+                navigate("/admin/dashboard");
+              }}
+              className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${Object.keys(eventSubviewsMap).includes(activeTab)
+                ? "bg-amber-600 text-white"
+                : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
+            >
+              <div className="flex items-center space-x-3">
+                <LayoutDashboard size={20} />
+                {sidebarOpen && <span>Event Dashboard</span>}
+              </div>
+              {sidebarOpen && <span className="ml-auto">{eventMgmtOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>}
+            </button>
+            {sidebarOpen && eventMgmtOpen && (
+              <div className="ml-4 mt-1 space-y-1 border-l border-gray-700 pl-3">
+                {eventManagementMenu.map((item) => (
                   <button
                     key={item.key}
-                    onClick={() => navigate(`/admin/venue-management/${item.key}`)}
-                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname === `/admin/venue-management/${item.key}`
+                    onClick={() => {
+                      setActiveTab(item.key);
+                      navigate("/admin/dashboard");
+                    }}
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === item.key
                       ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      : "text-gray-300 hover:bg-gray-700"
                       }`}
                   >
                     {item.label}
@@ -565,9 +638,46 @@ function AdminDashboard() {
                 ))}
               </div>
             )}
-          </div>
+          </React.Fragment>
 
-          <div className="space-y-2">
+          {/* Venue Management Dropdown Section link */}
+          <React.Fragment>
+            <button
+              onClick={() => {
+                setVenueOpen((v) => !v);
+                navigate("/admin/venue-management/overview");
+              }}
+              className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname.startsWith("/admin/venue-management")
+                ? "bg-amber-600 text-white"
+                : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                }`}
+            >
+              <div className="flex items-center space-x-3">
+                <Store size={20} />
+                {sidebarOpen && <span>Venue Management</span>}
+              </div>
+              {sidebarOpen && <span className="ml-auto">{venueOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>}
+            </button>
+            {sidebarOpen && venueOpen && (
+              <div className="ml-4 mt-1 space-y-1 border-l border-gray-700 pl-3">
+                {venueMenu.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => navigate(`/admin/venue-management/${item.key}`)}
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname === `/admin/venue-management/${item.key}`
+                      ? "bg-gray-700 text-white"
+                      : "text-gray-300 hover:bg-gray-700"
+                      }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </React.Fragment>
+
+          {/* Utilities Bottom Section options */}
+          <div className="space-y-2 border-t border-gray-700 pt-4">
             {[
               { id: "bookings", label: "Bookings", icon: Clock },
               { id: "payments", label: "Payments", icon: DollarSign },
@@ -580,7 +690,7 @@ function AdminDashboard() {
                   setActiveTab(item.id);
                   navigate("/admin/dashboard");
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
+                className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${activeTab === item.id && !location.pathname.startsWith("/admin/venue-management")
                   ? "bg-amber-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
                   }`}
@@ -634,7 +744,22 @@ function AdminDashboard() {
         </div>
 
         <div className="p-8">
-          {location.pathname === "/admin/venue-management/overview" ? (
+          {/* --- CONDITIONAL SUBSYSTEM ROUTER OVERRIDES FOR ISOLATED TABS --- */}
+          {activeTab === "event-dashboard" ? (
+            <div className="ems-tailwind-isolate"><EventDashboard /></div>
+          ) : activeTab === "events-hub" ? (
+            <div className="ems-tailwind-isolate"><EventsPage /></div>
+          ) : activeTab === "event-details" ? (
+            <div className="ems-tailwind-isolate"><EventDetails /></div>
+          ) : activeTab === "resources" ? (
+            <div className="ems-tailwind-isolate"><ResourcesPage /></div>
+          ) : activeTab === "categories" ? (
+            <div className="ems-tailwind-isolate"><EventCategory /></div>
+          ) : activeTab === "calendar" ? (
+            <div className="ems-tailwind-isolate"><CalendarPage /></div>
+          ) : activeTab === "help-centre" ? (
+            <div className="ems-tailwind-isolate"><HelpCentre /></div>
+          ) : location.pathname === "/admin/venue-management/overview" ? (
             <VenueDashboard />
           ) : location.pathname === "/admin/venue-management/add-venue" ? (
             <AddVenue />
@@ -700,7 +825,7 @@ function AdminDashboard() {
                     </div>
                     <Calendar className="text-blue-500" size={32} />
                   </div>
-                  <p className="text-green-600 text-sm mt-4">↑ 12% from last month</p>
+                  <p className="text-green-600 text-sm mt-4">&uarr; 12% from last month</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
@@ -1021,7 +1146,7 @@ function AdminDashboard() {
                             }}
                             className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
                           >
-                            ← Back
+                            &larr; Back
                           </button>
                         </div>
 
@@ -1405,7 +1530,7 @@ function AdminDashboard() {
                     </div>
                     <div className="rounded-3xl border border-gray-200 bg-sky-50 p-6 shadow-sm">
                       <p className="text-sm font-medium text-sky-700">Total Categories</p>
-                      <p className="mt-4 text-3xl font-bold text-sky-900">{new Set(vendors.map((v) => v.category)).size}</p>
+                      <p className="mt-4 text-3xl font-bold text-gray-900">{new Set(vendors.map((v) => v.category)).size}</p>
                       <p className="text-xs text-sky-600 mt-2">Vendor Categories</p>
                     </div>
                     <div className="rounded-3xl border border-gray-200 bg-orange-50 p-6 shadow-sm">
@@ -1415,7 +1540,7 @@ function AdminDashboard() {
                     </div>
                     <div className="rounded-3xl border border-gray-200 bg-pink-50 p-6 shadow-sm">
                       <p className="text-sm font-medium text-pink-700">Total Payments (This Month)</p>
-                      <p className="mt-4 text-3xl font-bold text-pink-900">₹8,75,000</p>
+                      <p className="mt-4 text-3xl font-bold text-pink-900">&#8377;8,75,000</p>
                       <p className="text-xs text-pink-600 mt-2">All Vendor Payments</p>
                     </div>
                   </div>
