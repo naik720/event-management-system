@@ -1,0 +1,52 @@
+[33m3805888[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to ORIG_HEAD
+[33m8fe2bcd[m HEAD@{1}: pull origin main: Fast-forward
+[33m3805888[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{2}: reset: moving to HEAD
+[33m3805888[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{3}: pull origin main: Fast-forward
+[33m529e2e1[m HEAD@{4}: reset: moving to HEAD
+[33m529e2e1[m HEAD@{5}: pull origin main: Fast-forward
+[33m080bfda[m HEAD@{6}: reset: moving to HEAD
+[33m080bfda[m HEAD@{7}: pull origin main: Fast-forward
+[33m82e3830[m HEAD@{8}: reset: moving to HEAD
+[33m82e3830[m HEAD@{9}: commit: Added event browse and event details page design
+[33med79ee9[m HEAD@{10}: commit (merge): My local changes
+[33m20249f3[m HEAD@{11}: commit: My local changes
+[33m2b02d8a[m HEAD@{12}: commit: Added Staff and Vendor Management Module
+[33mb07e6c1[m HEAD@{13}: pull origin main: Fast-forward
+[33m963063d[m HEAD@{14}: commit: Update AdminDashboard
+[33m311a330[m HEAD@{15}: commit: Update venue and event pages
+[33m215c2d6[m HEAD@{16}: commit (merge): Resolve merge conflicts with origin/main
+[33m90bef6b[m HEAD@{17}: reset: moving to HEAD
+[33m90bef6b[m HEAD@{18}: commit: My local changes
+[33m0caffd4[m HEAD@{19}: reset: moving to origin/main
+[33m0caffd4[m HEAD@{20}: pull origin main: Fast-forward
+[33m3a4a7d8[m HEAD@{21}: commit (merge): Merge conflict resolved
+[33m88dae1f[m HEAD@{22}: commit: Resolved merge conflicts and added dashboard modules
+[33mb4d9d2f[m HEAD@{23}: pull origin main: Fast-forward
+[33mfe2460e[m HEAD@{24}: reset: moving to HEAD
+[33mfe2460e[m HEAD@{25}: checkout: moving from main to main
+[33mfe2460e[m HEAD@{26}: checkout: moving from keerti-work to main
+[33ma9ad8af[m[33m ([m[1;31morigin/keerti-work[m[33m, [m[1;32mkeerti-work[m[33m)[m HEAD@{27}: checkout: moving from keerti-work to keerti-work
+[33ma9ad8af[m[33m ([m[1;31morigin/keerti-work[m[33m, [m[1;32mkeerti-work[m[33m)[m HEAD@{28}: checkout: moving from main to keerti-work
+[33mfe2460e[m HEAD@{29}: commit: Updated project files
+[33m8dd511d[m HEAD@{30}: commit: USER DASHBORD DESIGN CORRECT
+[33m1691d16[m HEAD@{31}: commit (merge): Resolved merge conflicts
+[33mf0f21b4[m HEAD@{32}: commit: My latest changes
+[33m3ca1506[m HEAD@{33}: commit: change thehome page
+[33mb05b796[m HEAD@{34}: commit: Updated event management frontend
+[33mbe45bb0[m HEAD@{35}: pull origin main: Fast-forward
+[33m39f7621[m HEAD@{36}: reset: moving to HEAD
+[33m39f7621[m HEAD@{37}: pull origin main: Fast-forward
+[33m7f3a145[m HEAD@{38}: checkout: moving from main to main
+[33m7f3a145[m HEAD@{39}: checkout: moving from keerti-work to main
+[33ma9ad8af[m[33m ([m[1;31morigin/keerti-work[m[33m, [m[1;32mkeerti-work[m[33m)[m HEAD@{40}: checkout: moving from keerti-work to keerti-work
+[33ma9ad8af[m[33m ([m[1;31morigin/keerti-work[m[33m, [m[1;32mkeerti-work[m[33m)[m HEAD@{41}: reset: moving to HEAD
+[33ma9ad8af[m[33m ([m[1;31morigin/keerti-work[m[33m, [m[1;32mkeerti-work[m[33m)[m HEAD@{42}: checkout: moving from main to keerti-work
+[33m7f3a145[m HEAD@{43}: reset: moving to HEAD
+[33m7f3a145[m HEAD@{44}: checkout: moving from main to main
+[33m7f3a145[m HEAD@{45}: pull --tags origin main: Fast-forward
+[33mce9aabd[m HEAD@{46}: Branch: renamed refs/heads/main to refs/heads/main
+[33mce9aabd[m HEAD@{48}: commit: login page design change
+[33m87a77ac[m HEAD@{49}: commit: Implement login functionality with validation and add Forgot Password page
+[33mf40b182[m HEAD@{50}: commit: Frontend and backend setup completed
+[33m2b5edec[m HEAD@{51}: commit: Project setup completed
+[33mcca3414[m HEAD@{52}: commit (initial): Initial frontend and backend setup
