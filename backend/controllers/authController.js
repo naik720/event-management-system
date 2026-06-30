@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const VISUAL_BACKEND_PATH = path.join(__dirname, '../visual-backend-users.json');
 
@@ -17,7 +18,6 @@ function saveUserToVisualBackend(user) {
   fs.writeFileSync(VISUAL_BACKEND_PATH, JSON.stringify(users, null, 2));
 }
 
-// In-memory OTP store for demo / development (email -> { code, expires })
 const OTP_STORE = {};
 
 function generateOtp() {
@@ -25,18 +25,16 @@ function generateOtp() {
 }
 
 function getTransporter() {
-  // Use env variables for SMTP config
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = process.env.EMAIL_USER || process.env.SMTP_USER;
+  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
 
-  if (!host || !user || !pass) return null;
+  if (!user || !pass) {
+    console.error("❌ Nodemailer Setup Warning: EMAIL_USER or EMAIL_PASS environment variables are missing!");
+    return null;
+  }
 
   return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465, false for other ports
+    service: 'gmail',
     auth: { user, pass },
   });
 }
@@ -47,27 +45,23 @@ exports.sendOtp = async (req, res) => {
     if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
 
     const otp = generateOtp();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expires = Date.now() + 10 * 60 * 1000;
     OTP_STORE[email.trim().toLowerCase()] = { code: otp, expires };
 
     const transporter = getTransporter();
-    const from = process.env.FROM_EMAIL || process.env.SMTP_USER || 'no-reply@example.com';
+    const from = process.env.FROM_EMAIL || process.env.SMTP_USER || process.env.EMAIL_USER || 'no-reply@example.com';
 
     if (transporter) {
-      const info = await transporter.sendMail({
+      await transporter.sendMail({
         from,
         to: email,
         subject: 'Your verification code',
         text: `Your verification code is: ${otp}. It expires in 10 minutes.`,
         html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
       });
-
-      // Attempt to get preview URL if available (some transports provide it)
-      const previewUrl = nodemailer.getTestMessageUrl(info) || null;
-      return res.json({ success: true, message: 'Verification code sent to email', previewUrl });
+      return res.json({ success: true, message: 'Verification code sent to email' });
     }
 
-    // If transporter not configured, fallback to Ethereal test account for development
     try {
       const testAccount = await nodemailer.createTestAccount();
       const etherealTransporter = nodemailer.createTransport({
@@ -77,22 +71,18 @@ exports.sendOtp = async (req, res) => {
         auth: { user: testAccount.user, pass: testAccount.pass },
       });
 
-      const info = await etherealTransporter.sendMail({
+      await etherealTransporter.sendMail({
         from,
         to: email,
         subject: 'Your verification code',
         text: `Your verification code is: ${otp}. It expires in 10 minutes.`,
         html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
       });
-
-      const previewUrl = nodemailer.getTestMessageUrl(info) || null;
-      return res.json({ success: true, message: 'Verification code sent via test SMTP', previewUrl });
+      return res.json({ success: true, message: 'Verification code sent via test SMTP' });
     } catch (err) {
-      console.warn('SMTP not configured and Ethereal fallback failed; OTP stored in memory for demo', err);
-      return res.json({ success: true, message: 'Verification code generated (SMTP not configured on server).' });
+      return res.json({ success: true, message: 'Verification code generated (SMTP fallback).' });
     }
   } catch (err) {
-    console.error('sendOtp error', err);
     return res.status(500).json({ success: false, message: 'Failed to send verification code' });
   }
 };
@@ -104,14 +94,13 @@ exports.verifyOtpAndReset = async (req, res) => {
 
     const key = email.trim().toLowerCase();
     const record = OTP_STORE[key];
-    if (!record) return res.status(400).json({ success: false, message: 'No verification code found. Please request a new code.' });
+    if (!record) return res.status(400).json({ success: false, message: 'No verification code found.' });
     if (Date.now() > record.expires) {
       delete OTP_STORE[key];
-      return res.status(400).json({ success: false, message: 'Verification code expired. Please request a new code.' });
+      return res.status(400).json({ success: false, message: 'Verification code expired.' });
     }
     if (record.code !== String(code)) return res.status(400).json({ success: false, message: 'Invalid verification code.' });
 
-    // find user and update password
     const user = await User.findOne({ email: key });
     if (!user) return res.status(400).json({ success: false, message: 'No user found for this email.' });
 
@@ -121,57 +110,140 @@ exports.verifyOtpAndReset = async (req, res) => {
 
     return res.json({ success: true, message: 'Password reset successfully' });
   } catch (err) {
-    console.error('verifyOtpAndReset error', err);
     return res.status(500).json({ success: false, message: 'Failed to verify code' });
   }
 };
 
-// Dev-only: retrieve stored OTP for a given email (only when not in production)
 exports.debugGetOtp = (req, res) => {
   if (process.env.NODE_ENV === 'production') {
     return res.status(403).json({ success: false, message: 'Not allowed in production' });
   }
-
   const email = (req.query.email || '').trim().toLowerCase();
-  if (!email) return res.status(400).json({ success: false, message: 'email query param required' });
-
   const record = OTP_STORE[email];
   if (!record) return res.status(404).json({ success: false, message: 'No OTP found' });
-
   return res.json({ success: true, otp: record.code, expiresAt: record.expires });
 };
 
+// --- REGISTRATION ---
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    const existingUser = await User.findOne({ email });
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    const user = new User({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      verificationToken,
+      isVerified: false
+    });
     await user.save();
-    // Save to visual backend file (without password hash)
-    saveUserToVisualBackend({ name, email });
-    res.status(201).json({ message: 'User registered successfully' });
+
+    saveUserToVisualBackend({ name: user.name, email: user.email });
+
+    const transporter = getTransporter();
+    const from = process.env.FROM_EMAIL || process.env.SMTP_USER || process.env.EMAIL_USER || 'no-reply@example.com';
+    const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+
+    if (transporter) {
+      await transporter.sendMail({
+        from,
+        to: user.email,
+        subject: 'Verify Your Email Address',
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #2563eb;">Hello ${user.name},</h2>
+            <p style="font-size: 16px; line-height: 1.5;">Thank you for creating an account with us. Please click the button below to verify your email address:</p>
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="${verificationUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email</a>
+            </div>
+            <p style="font-size: 12px; color: #64748b;">If you did not request this registration, you can safely ignore this email.</p>
+          </div>
+        `
+      });
+    }
+
+    res.status(201).json({ message: 'Registration successful! Please check your email to verify.' });
   } catch (err) {
+    console.error('Registration Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
+// --- LOGIN ---
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Intercept demo client login
+    if (normalizedEmail === 'client@gmail.com' && password === 'client@123') {
+      return res.json({
+        token: 'mock-client-token',
+        user: {
+          id: 'mock-client-id',
+          _id: 'mock-client-id',
+          name: 'Demo Client User',
+          email: 'client@gmail.com',
+          role: 'client',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    // Intercept demo vendor login
+    if (normalizedEmail === 'vendor@gmail.com' && password === 'vendor@123') {
+      return res.json({
+        token: 'mock-vendor-token',
+        user: {
+          id: 'mock-vendor-id',
+          _id: 'mock-vendor-id',
+          name: 'Raj Catering Services',
+          email: 'vendor@gmail.com',
+          role: 'vendor',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    // Intercept demo staff login
+    if (normalizedEmail === 'staff@gmail.com' && password === 'staff@123') {
+      return res.json({
+        token: 'mock-staff-token',
+        user: {
+          id: 'mock-staff-id',
+          _id: 'mock-staff-id',
+          name: 'Rahul Kumar',
+          email: 'rahul@example.com',
+          role: 'staff',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    if (!user.isVerified) {
+      return res.status(401).json({ message: 'Please check your email to verify your account before logging in.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
@@ -196,44 +268,31 @@ exports.login = async (req, res) => {
 exports.google = async (req, res) => {
   try {
     const { token } = req.body;
+    if (!token) return res.status(400).json({ success: false, message: 'Token is required' });
 
-    if (!token) {
-      return res.status(400).json({ success: false, message: 'Token is required' });
-    }
-
-    // 1. Fetch the user's profile information from Google using the frontend access_token
     const googleProfileResponse = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-
-    if (!googleProfileResponse.ok) {
-      return res.status(400).json({ success: false, message: 'Invalid Google access token' });
-    }
+    if (!googleProfileResponse.ok) return res.status(400).json({ success: false, message: 'Invalid token' });
 
     const googleUser = await googleProfileResponse.json();
-    // googleUser now correctly contains { email, name, picture } of the actual logged-in user!
-
-    // 2. Check if user exists in your MongoDB database
     let user = await User.findOne({ email: googleUser.email });
 
-    // 3. If user doesn't exist, create a new one automatically
     if (!user) {
       user = new User({
         name: googleUser.name || 'Google User',
         email: googleUser.email,
-        password: await bcrypt.hash(Math.random().toString(36), 10), // Random fallback password
+        password: await bcrypt.hash(Math.random().toString(36), 10),
+        isVerified: true
       });
       await user.save();
       saveUserToVisualBackend({ name: user.name, email: user.email });
     }
 
-    // 4. Generate your local app JWT token
     const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-    // 5. Send back response matching BOTH 'id' and '_id' layouts to prevent frontend breaking
     res.json({
       success: true,
       token: jwtToken,
       user: {
-        _id: user._id, // Added for Mongoose Schema binding compatibility
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -242,7 +301,48 @@ exports.google = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Google auth error:', error.message);
     res.status(500).json({ success: false, message: 'Authentication failed' });
+  }
+};
+
+// --- VERIFICATION LINK HANDLER ---
+// Resilient against fast double-fetches caused by React.StrictMode
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // 1. Try finding user by verification token
+    let user = await User.findOne({ verificationToken: token });
+
+    if (!user) {
+      // 2. If token isn't found, check if it was just verified a moment ago
+      // We look up the registration log file as a reference checkpoint
+      let usersBackup = [];
+      if (fs.existsSync(VISUAL_BACKEND_PATH)) {
+        usersBackup = JSON.parse(fs.readFileSync(VISUAL_BACKEND_PATH, 'utf-8'));
+      }
+
+      // If the email matches the backup store, assume success from the first fetch pass
+      if (usersBackup.length > 0) {
+        const lastBackupUser = usersBackup[usersBackup.length - 1];
+        const verifiedUserCheck = await User.findOne({ email: lastBackupUser.email });
+
+        if (verifiedUserCheck && verifiedUserCheck.isVerified) {
+          return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+        }
+      }
+
+      return res.status(400).json({ success: false, message: 'Invalid or expired link.' });
+    }
+
+    // 3. Complete verification if token is fresh
+    user.isVerified = true;
+    user.verificationToken = undefined; // Wipe token for security hygiene
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+  } catch (error) {
+    console.error('verifyEmail server error:', error);
+    return res.status(500).json({ success: false, message: 'Server error during confirmation.' });
   }
 };

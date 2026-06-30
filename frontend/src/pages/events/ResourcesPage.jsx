@@ -19,7 +19,7 @@ function ResourcesPage() {
   const [resourceType, setResourceType] = useState("all");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
 
     if (!token) {
       navigate("/login?from=event-management");
@@ -31,7 +31,7 @@ function ResourcesPage() {
 
   const fetchResources = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
       if (!token) return;
 
       const response = await fetch("http://localhost:5000/api/events/resources", {
@@ -77,7 +77,7 @@ function ResourcesPage() {
     if (!window.confirm("Are you sure you want to delete this resource?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
       const response = await fetch(`http://localhost:5000/api/events/resources/${resourceId}`, {
         method: "DELETE",
         headers: {

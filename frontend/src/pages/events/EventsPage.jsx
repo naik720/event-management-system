@@ -17,7 +17,7 @@ function EventsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
 
     if (!token) {
       navigate("/login?from=event-management");
@@ -29,7 +29,7 @@ function EventsPage() {
 
   const fetchUserEvents = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
       if (!token) return;
 
       const response = await fetch("http://localhost:5000/api/events/user-events", {
@@ -69,7 +69,7 @@ function EventsPage() {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
       const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
         method: "DELETE",
         headers: {

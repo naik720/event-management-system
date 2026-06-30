@@ -1,5 +1,10 @@
 const API_BASE_URL = "http://localhost:5000";
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const getEvents = async () => {
   const response = await fetch(`${API_BASE_URL}/api/events`);
   if (!response.ok) {
@@ -68,3 +73,92 @@ export const updateBookingStatus = async (bookingId, updates) => {
 
   return response.json();
 };
+
+export const getUserBilling = async (userId) => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/user/${userId || "guest"}`);
+  if (!response.ok) {
+    throw new Error("Unable to load billing records");
+  }
+  return response.json();
+};
+
+export const getBillingDashboard = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/dashboard`);
+  if (!response.ok) {
+    throw new Error("Unable to load billing dashboard");
+  }
+  return response.json();
+};
+
+export const createInvoice = async (bookingId, baseAmount) => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/invoices/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ bookingId, baseAmount }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to generate invoice");
+  }
+
+  return response.json();
+};
+
+export const createRazorpayOrder = async (invoiceId) => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/razorpay/order`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ invoiceId }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Unable to create Razorpay order");
+  }
+
+  return response.json();
+};
+
+export const verifyRazorpayPayment = async (payload) => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/razorpay/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Unable to verify payment");
+  }
+
+  return response.json();
+};
+
+export const recordCashPayment = async (invoiceId, notes = "") => {
+  const response = await fetch(`${API_BASE_URL}/api/payments/cash`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ invoiceId, notes }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Unable to record cash payment");
+  }
+
+  return response.json();
+};
+
+export const getInvoicePdfUrl = (invoiceId) => `${API_BASE_URL}/api/payments/invoices/${invoiceId}/pdf`;

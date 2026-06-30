@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
+const { createInvoiceForBooking } = require('../services/billingService');
 
 router.get('/', async (req, res) => {
   try {
@@ -17,7 +18,17 @@ router.get('/:id', async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
-    res.json(booking);
+    let invoice = null;
+    if (req.body.status === 'Approved') {
+      invoice = await createInvoiceForBooking(booking);
+    }
+
+    const response = booking.toObject();
+    if (invoice) {
+      response.invoice = invoice;
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

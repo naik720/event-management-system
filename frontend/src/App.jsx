@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import AdminLogin from "./admin/pages/AdminLogin";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
+import VerifyEmail from "./pages/VerifyEmail"; // --- IMPORTED NEW PAGE LINK HERE ---
 
 // Main User Dashboard Components
 import Dashboard from "./user-dashboard/pages/Dashboard";
@@ -23,7 +24,14 @@ import HelpSupport from "./user-dashboard/pages/HelpSupport";
 import Feedback from "./user-dashboard/pages/Feedback";
 import Notification from "./user-dashboard/pages/Notification";
 import EventRequest from "./user-dashboard/pages/EventRequest";
+import StaffLayout from "./Vendor&staffManagement/staff/components/StaffLayout";
 import StaffDashboard from "./Vendor&staffManagement/staff/pages/StaffDashboard";
+import StaffEvents from "./Vendor&staffManagement/staff/pages/StaffEvents";
+import StaffTasks from "./Vendor&staffManagement/staff/pages/StaffTasks";
+import StaffAttendance from "./Vendor&staffManagement/staff/pages/StaffAttendance";
+import StaffSchedule from "./Vendor&staffManagement/staff/pages/StaffSchedule";
+import StaffProfile from "./Vendor&staffManagement/staff/pages/StaffProfile";
+import StaffNotifications from "./Vendor&staffManagement/staff/pages/StaffNotifications";
 import VendorDashboard from "./Vendor&staffManagement/vendor/pages/VendorDashboard";
 
 // Event Management Layout and Base Workflow Pages
@@ -36,19 +44,50 @@ import EventDashboard from "./pages/events/EventDashboard";
 import EventsPage from "./pages/events/EventsPage";
 import CalendarPage from "./pages/events/CalendarPage";
 
+// New Help Centre Component
+import HelpCentre from "./pages/events/HelpCentre";
+
 // Route Guard Components
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute";
 
-// Smart Protected Route Guard for Users
+function getAuthRole() {
+  return localStorage.getItem("userRole") || "client";
+}
+
 function UserProtectedRoute({ children }) {
   const loggedInUser = localStorage.getItem("loggedInUser");
   const token = localStorage.getItem("token");
+  const role = getAuthRole();
   const location = useLocation();
 
   if (!loggedInUser || !token) {
     if (location.pathname.startsWith("/user/event-management")) {
       return <Navigate to="/login?from=event-management" replace />;
     }
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role === "vendor" && !location.pathname.startsWith("/vendor")) {
+    return <Navigate to="/vendor/dashboard" replace />;
+  }
+
+  if (role === "staff" && !location.pathname.startsWith("/staff")) {
+    return <Navigate to="/staff/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function RoleProtectedRoute({ allowedRoles, children }) {
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  const token = localStorage.getItem("token");
+  const role = getAuthRole();
+
+  if (!loggedInUser || !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
@@ -64,8 +103,35 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/staff/dashboard" element={<StaffDashboard />} />
-      <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+
+      {/* --- EMAIL CONFIRMATION LINK PUBLIC LANDING ROUTE --- */}
+      <Route path="/verify-email" element={<VerifyEmail />} />
+
+      <Route
+        path="/staff"
+        element={
+          <RoleProtectedRoute allowedRoles={["staff"]}>
+            <StaffLayout />
+          </RoleProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<StaffDashboard />} />
+        <Route path="events" element={<StaffEvents />} />
+        <Route path="tasks" element={<StaffTasks />} />
+        <Route path="attendance" element={<StaffAttendance />} />
+        <Route path="schedule" element={<StaffSchedule />} />
+        <Route path="profile" element={<StaffProfile />} />
+        <Route path="notifications" element={<StaffNotifications />} />
+      </Route>
+      <Route
+        path="/vendor/dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={["vendor"]}>
+            <VendorDashboard />
+          </RoleProtectedRoute>
+        }
+      />
 
       {/* --- General User Dashboard Routes --- */}
       <Route
@@ -339,6 +405,7 @@ function App() {
         <Route path="categories" element={<EventCategory />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="analytics" element={<Payments />} />
+        <Route path="help-centre" element={<HelpCentre />} />
       </Route>
 
       {/* --- Admin Panel Routes --- */}
@@ -356,6 +423,14 @@ function App() {
         element={
           <AdminProtectedRoute>
             <AdminDashboard />
+          </AdminProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/event-management"
+        element={
+          <AdminProtectedRoute>
+            <EventManagementDashboard embedded />
           </AdminProtectedRoute>
         }
       />

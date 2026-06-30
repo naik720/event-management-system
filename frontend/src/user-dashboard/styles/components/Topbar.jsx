@@ -13,19 +13,19 @@ const Topbar = () => {
   const clientInitial = getClientInitial(currentClient);
 
   return (
-    <div className="topbar">
+    <div className="topbar-unified">
       <div>
         <h1>Client Dashboard</h1>
         <p>{currentClient.role || "Client"} module</p>
       </div>
 
-      <div className="profile-box">
+      <div className="profile-box-unified">
         <div>
           <h4>{clientEmail}</h4>
           <p>Welcome back, {clientName}!</p>
         </div>
 
-        <div className="avatar">
+        <div className="avatar-unified">
           {clientInitial}
         </div>
       </div>

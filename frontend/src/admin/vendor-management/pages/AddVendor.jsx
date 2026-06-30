@@ -26,16 +26,16 @@ const initialForm = {
 const vendorToForm = (vendor) =>
   vendor
     ? {
-        vendorName: vendor.name || "",
-        category: vendor.category || "",
-        phone: vendor.phone || "",
-        email: vendor.email || "",
-        address: vendor.address || "",
-        contactPerson: vendor.contactPerson || "",
-        contractStartDate: vendor.contractStartDate || "",
-        contractEndDate: vendor.contractEndDate || "",
-        status: vendor.status || vendor.contractStatus || "Active",
-      }
+      vendorName: vendor.name || vendor.vendorName || "",
+      category: vendor.category || "",
+      phone: vendor.phone || "",
+      email: vendor.email || "",
+      address: vendor.address || "",
+      contactPerson: vendor.contactPerson || "",
+      contractStartDate: vendor.contractStartDate || "",
+      contractEndDate: vendor.contractEndDate || "",
+      status: vendor.status || vendor.contractStatus || "Active",
+    }
     : initialForm;
 
 const vendorCategories = [
@@ -175,18 +175,21 @@ export default function AddVendor({
               value={form.vendorName}
               onChange={(value) => handleChange("vendorName", value)}
               placeholder="Enter vendor name"
+              error={errors.vendorName}
             />
             <Field
               label="Contact Person"
               value={form.contactPerson}
               onChange={(value) => handleChange("contactPerson", value)}
               placeholder="Enter contact person name"
+              error={errors.contactPerson}
             />
             <SelectField
               label="Category"
               value={form.category}
               onChange={(value) => handleChange("category", value)}
               options={["Select Category", "Catering", "Decoration", "Photography", "Sound & Lighting"]}
+              error={errors.category}
             />
             <DateField
               label="Contract Start Date"
@@ -210,7 +213,7 @@ export default function AddVendor({
               label="Contract End Date"
               value={form.contractEndDate}
               onChange={(value) => handleChange("contractEndDate", value)}
-              min={today}
+              min={form.contractStartDate || today}
               error={errors.contractEndDate}
             />
             <Field
@@ -276,9 +279,8 @@ export default function AddVendor({
                   key={category.title}
                   type="button"
                   onClick={() => handleChange("category", category.title)}
-                  className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition hover:border-slate-300 hover:shadow-sm ${
-                    form.category === category.title ? "border-[#5b2ceb] bg-[#f6f3ff]" : "border-slate-200 bg-white"
-                  }`}
+                  className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition hover:border-slate-300 hover:shadow-sm ${form.category === category.title ? "border-[#5b2ceb] bg-[#f6f3ff]" : "border-slate-200 bg-white"
+                    }`}
                 >
                   <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${category.accent}`}>
                     <Icon size={22} />
@@ -303,7 +305,7 @@ function Field({ label, value, onChange, placeholder, icon: Icon = null, classNa
       <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label} <span className="text-rose-500">*</span>
       </label>
-      <div className={`flex items-center rounded-xl border bg-white px-3 py-2.5 transition focus-within:border-indigo-500 ${error ? "border-rose-400" : "border-slate-200"}`}>
+      <div className={`flex items-center rounded-xl border bg-white px-3 py-2.5 transition focus-within:border-indigo-500 ${error ? "border-rose-400 focus-within:border-rose-500" : "border-slate-200"}`}>
         {Icon ? <Icon size={16} className="mr-2 text-slate-400" /> : null}
         <input
           type={type}
@@ -321,17 +323,17 @@ function Field({ label, value, onChange, placeholder, icon: Icon = null, classNa
   );
 }
 
-function SelectField({ label, value, onChange, options }) {
+function SelectField({ label, value, onChange, options, error }) {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label} <span className="text-rose-500">*</span>
       </label>
-      <div className="flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition focus-within:border-indigo-500">
+      <div className={`flex items-center rounded-xl border bg-white px-3 py-2.5 transition focus-within:border-indigo-500 ${error ? "border-rose-400 focus-within:border-rose-500" : "border-slate-200"}`}>
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none bg-transparent text-sm text-slate-700 outline-none"
+          className="w-full appearance-none bg-transparent text-sm text-slate-700 outline-none cursor-pointer"
         >
           {options.map((option) => (
             <option key={option} value={option === "Select Category" ? "" : option}>
@@ -341,6 +343,7 @@ function SelectField({ label, value, onChange, options }) {
         </select>
         <ChevronDown size={16} className="text-slate-400" />
       </div>
+      {error && <p className="mt-2 text-xs font-medium text-rose-600">{error}</p>}
     </div>
   );
 }
@@ -351,13 +354,13 @@ function DateField({ label, value, onChange, min, error }) {
       <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label} <span className="text-rose-500">*</span>
       </label>
-      <div className={`flex items-center rounded-xl border bg-white px-3 py-2.5 transition focus-within:border-indigo-500 ${error ? "border-rose-400" : "border-slate-200"}`}>
+      <div className={`flex items-center rounded-xl border bg-white px-3 py-2.5 transition focus-within:border-indigo-500 ${error ? "border-rose-400 focus-within:border-rose-500" : "border-slate-200"}`}>
         <input
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           min={min || getLocalDateString()}
-          className="w-full bg-transparent text-sm text-slate-700 outline-none"
+          className="w-full bg-transparent text-sm text-slate-700 outline-none cursor-pointer"
         />
       </div>
       {error && <p className="mt-2 text-xs font-medium text-rose-600">{error}</p>}
@@ -367,11 +370,29 @@ function DateField({ label, value, onChange, min, error }) {
 
 function validateVendor(form, today, existingVendors, editingVendorId) {
   const nextErrors = {};
+
+  const vendorNameValue = form.vendorName.trim();
+  const contactPersonValue = form.contactPerson.trim();
+  const categoryValue = form.category.trim();
   const emailValue = form.email.trim();
   const phoneValue = form.phone.trim();
   const startDate = form.contractStartDate;
   const endDate = form.contractEndDate;
 
+  // New Missing Basic Input Validations
+  if (!vendorNameValue) {
+    nextErrors.vendorName = "Vendor name is required";
+  }
+
+  if (!contactPersonValue) {
+    nextErrors.contactPerson = "Contact person name is required";
+  }
+
+  if (!categoryValue) {
+    nextErrors.category = "Please select a category";
+  }
+
+  // Email Checking
   if (!emailValue) {
     nextErrors.email = "Email is required";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
@@ -384,6 +405,7 @@ function validateVendor(form, today, existingVendors, editingVendorId) {
     nextErrors.email = "Email already exists";
   }
 
+  // Phone Checking
   if (!phoneValue) {
     nextErrors.phone = "Phone number is required";
   } else if (!/^[0-9]{10}$/.test(phoneValue)) {
@@ -394,11 +416,16 @@ function validateVendor(form, today, existingVendors, editingVendorId) {
     nextErrors.phone = "Phone number already exists";
   }
 
-  if (startDate && startDate < today) {
+  // Date Checking
+  if (!startDate) {
+    nextErrors.contractStartDate = "Start date is required";
+  } else if (startDate < today) {
     nextErrors.contractStartDate = "Start date cannot be in the past";
   }
 
-  if (endDate && endDate < today) {
+  if (!endDate) {
+    nextErrors.contractEndDate = "End date is required";
+  } else if (endDate < today) {
     nextErrors.contractEndDate = "End date cannot be in the past";
   }
 

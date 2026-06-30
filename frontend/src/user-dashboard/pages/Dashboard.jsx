@@ -6,6 +6,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
+// Layout architecture assets
 import Sidebar from "../styles/components/Sidebar";
 import Topbar from "../styles/components/Topbar";
 import StatsCard from "../styles/components/StatsCard";
@@ -16,6 +17,7 @@ import { getClientDisplayName, getCurrentClient } from "../services/clientSessio
 import { getBookings } from "../services/userApi";
 
 import "../styles/dashboard.css";
+import "../../styles/unified-dashboard.css";
 
 const SectionHeader = ({ title }) => (
   <div className="section-header">
@@ -51,36 +53,22 @@ const Dashboard = () => {
     [bookings]
   );
 
-  const recentBookings = useMemo(
-    () => bookings.slice(0, 3),
-    [bookings]
-  );
+  const bookingImageFor = (booking, index = 0) => {
+    if (booking?.image) return booking.image;
+    return [
+      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+    ][index % 3];
+  };
+
+  const recentBookings = useMemo(() => bookings.slice(0, 3), [bookings]);
 
   const recommendedEvents = [
-    {
-      image: "https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=300&q=80",
-      title: "Standup Comedy Night",
-      date: "May 30, 2026",
-      location: "City Theatre",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=300&q=80",
-      title: "Food Festival 2026",
-      date: "Jun 05, 2026",
-      location: "Central Park",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=300&q=80",
-      title: "Art Exhibition",
-      date: "Jun 12, 2026",
-      location: "Art Gallery",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=300&q=80",
-      title: "Sports Event Live",
-      date: "Jun 20, 2026",
-      location: "Stadium Arena",
-    },
+    { image: "https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=300&q=80", title: "Standup Comedy Night", date: "May 30, 2026", location: "City Theatre" },
+    { image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=300&q=80", title: "Food Festival 2026", date: "Jun 05, 2026", location: "Central Park" },
+    { image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=300&q=80", title: "Art Exhibition", date: "Jun 12, 2026", location: "Art Gallery" },
+    { image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=300&q=80", title: "Sports Event Live", date: "Jun 20, 2026", location: "Stadium Arena" },
   ];
 
   return (
@@ -113,7 +101,7 @@ const Dashboard = () => {
                 upcomingEvents.map((event) => (
                   <EventCard
                     key={event._id || event.eventTitle}
-                    image={event.image}
+                    image={event.image || bookingImageFor(event)}
                     title={event.eventTitle}
                     date={event.eventDate}
                     location={event.location}
@@ -132,10 +120,10 @@ const Dashboard = () => {
 
             <div className="vertical-list">
               {recentBookings.length > 0 ? (
-                recentBookings.map((booking) => (
+                recentBookings.map((booking, index) => (
                   <BookingCard
                     key={booking._id || booking.eventTitle}
-                    image={booking.image}
+                    image={booking.image || bookingImageFor(booking, index)}
                     title={booking.eventTitle}
                     date={booking.eventDate}
                     location={booking.location}

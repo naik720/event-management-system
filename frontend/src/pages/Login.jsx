@@ -38,17 +38,87 @@ function Login() {
     setError("");
   };
 
+  const handleDemoLogin = (email, password) => {
+    setFormData({ email, password });
+    setError("");
+
+    const loginTime = new Date().toISOString();
+    const isVendor = email.includes("vendor");
+    const isStaff = email.includes("staff");
+    
+    let role = "client";
+    let name = "Demo Client User";
+    let id = "mock-client-id";
+    
+    if (isVendor) {
+      role = "vendor";
+      name = "Raj Catering Services";
+      id = "mock-vendor-id";
+    } else if (isStaff) {
+      role = "staff";
+      name = "Rahul Kumar";
+      id = "mock-staff-id";
+    }
+
+    const updatedUser = {
+      id: id,
+      _id: id,
+      name: name,
+      email: isStaff ? "rahul@example.com" : email,
+      role: role,
+      lastLogin: loginTime,
+      memberSince: loginTime,
+    };
+
+    localStorage.setItem("token", `mock-${role}-token`);
+    localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem("userRole", role);
+    saveClientProfile(updatedUser);
+
+    setTimeout(() => {
+      if (role === "vendor") {
+        navigate("/vendor/dashboard");
+      } else if (role === "staff") {
+        navigate("/staff/dashboard");
+      } else {
+        navigate("/user/dashboard");
+      }
+    }, 150);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
+      const enteredEmail = formData.email.trim().toLowerCase();
+      const enteredPassword = formData.password;
+
+      // Client-side intercept for demo client
+      if (enteredEmail === "client@gmail.com" && enteredPassword === "client@123") {
+        handleDemoLogin("client@gmail.com", "client@123");
+        return;
+      }
+
+      // Client-side intercept for demo vendor
+      if (enteredEmail === "vendor@gmail.com" && enteredPassword === "vendor@123") {
+        handleDemoLogin("vendor@gmail.com", "vendor@123");
+        return;
+      }
+
+      // Client-side intercept for demo staff
+      if (enteredEmail === "staff@gmail.com" && enteredPassword === "staff@123") {
+        handleDemoLogin("staff@gmail.com", "staff@123");
+        return;
+      }
+
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
+          email: enteredEmail,
+          password: enteredPassword,
         }),
       });
 
@@ -65,12 +135,17 @@ function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
         localStorage.setItem("user", JSON.stringify(updatedUser));
+        localStorage.setItem("userRole", data.user.role || "client");
         saveClientProfile(updatedUser);
 
         // 🚀 Redirect securely to the correct dashboard routes
         setTimeout(() => {
-          if (fromEventManagement) {
-            // Updated to point to your actual event management path!
+          const role = data.user.role || "client";
+          if (role === "vendor") {
+            navigate("/vendor/dashboard");
+          } else if (role === "staff") {
+            navigate("/staff/dashboard");
+          } else if (fromEventManagement) {
             navigate("/user/event-management");
           } else {
             navigate("/user/dashboard");
@@ -107,12 +182,17 @@ function Login() {
           localStorage.setItem("user", JSON.stringify(updatedUser));
           localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
           if (data.token) localStorage.setItem("token", data.token);
+          localStorage.setItem("userRole", data.user.role || "client");
           saveClientProfile(updatedUser);
 
           // 🚀 Redirect securely to the correct dashboard routes (Google Login)
           setTimeout(() => {
-            if (fromEventManagement) {
-              // Updated to point to your actual event management path!
+            const role = data.user.role || "client";
+            if (role === "vendor") {
+              navigate("/vendor/dashboard");
+            } else if (role === "staff") {
+              navigate("/staff/dashboard");
+            } else if (fromEventManagement) {
               navigate("/user/event-management");
             } else {
               navigate("/user/dashboard");
@@ -123,6 +203,32 @@ function Login() {
         }
       } catch (error) {
         console.error("Error connecting to backend auth server:", error);
+        
+        // Fallback demo client login when server is offline/unreachable
+        const loginTime = new Date().toISOString();
+        const updatedUser = {
+          id: "google-demo-client-id",
+          _id: "google-demo-client-id",
+          name: "Demo Google User",
+          email: "demogoogle@gmail.com",
+          role: "client",
+          lastLogin: loginTime,
+          memberSince: loginTime,
+        };
+
+        localStorage.setItem("token", "google-demo-token");
+        localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        localStorage.setItem("userRole", "client");
+        saveClientProfile(updatedUser);
+
+        setTimeout(() => {
+          if (fromEventManagement) {
+            navigate("/user/event-management");
+          } else {
+            navigate("/user/dashboard");
+          }
+        }, 100);
       }
     },
     onError: (error) => console.log("Login Failed:", error),
@@ -182,7 +288,7 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter password"
-              className="w-full p-4 rounded-xl mb-3 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
+              className="w-full p-4 rounded-xl mb-6 outline-none bg-white/20 text-white border border-white/30 focus:bg-white/30"
             />
 
             {error && (
@@ -212,6 +318,42 @@ function Login() {
                 Create Account
               </span>
             </div>
+
+             {/* Quick Demo Access Widget */}
+             <div className="mt-8 pt-6 border-t border-white/10">
+               <p className="text-center text-xs font-semibold text-gray-300 mb-3 tracking-wider uppercase">
+                 Quick Demo Access
+               </p>
+               <div className="grid grid-cols-3 gap-2">
+                 <button
+                   type="button"
+                   onClick={() => handleDemoLogin("client@gmail.com", "client@123")}
+                   className="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/15 active:scale-95 transition-all text-white group"
+                 >
+                   <span className="text-xl mb-1 group-hover:scale-110 transition-transform">👤</span>
+                   <span className="font-semibold text-[10px] text-white">Client</span>
+                   <span className="text-[8px] text-gray-400 mt-0.5">client@gmail.com</span>
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => handleDemoLogin("vendor@gmail.com", "vendor@123")}
+                   className="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/15 active:scale-95 transition-all text-white group"
+                 >
+                   <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🍳</span>
+                   <span className="font-semibold text-[10px] text-white">Vendor</span>
+                   <span className="text-[8px] text-gray-400 mt-0.5">vendor@gmail.com</span>
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => handleDemoLogin("staff@gmail.com", "staff@123")}
+                   className="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/15 active:scale-95 transition-all text-white group"
+                 >
+                   <span className="text-xl mb-1 group-hover:scale-110 transition-transform">👔</span>
+                   <span className="font-semibold text-[10px] text-white">Staff</span>
+                   <span className="text-[8px] text-gray-400 mt-0.5">staff@gmail.com</span>
+                 </button>
+               </div>
+             </div>
           </form>
         </div>
       </div>

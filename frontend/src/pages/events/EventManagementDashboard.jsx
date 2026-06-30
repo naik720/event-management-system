@@ -20,15 +20,17 @@ import {
   AlertCircle,
   TrendingUp,
 } from "lucide-react";
+import "../../styles/unified-dashboard.css";
 
-function EventManagementDashboard() {
+function EventManagementDashboard({ embedded = false }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdminView = embedded || location.pathname.startsWith("/admin");
   const [userData, setUserData] = useState(null);
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
     const user = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
 
     // 🛡️ Secure Authentication Redirect
@@ -50,7 +52,7 @@ function EventManagementDashboard() {
 
   const fetchUserEvents = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
       if (!token) return;
 
       const response = await fetch("http://localhost:5000/api/events/user-events", {
@@ -74,99 +76,117 @@ function EventManagementDashboard() {
     navigate("/");
   };
 
+  const handleCloseSidebar = () => {
+    if (isAdminView) {
+      navigate(location.state?.from || "/admin/dashboard");
+      return;
+    }
+
+    navigate(-1);
+  };
+
   const handleCreateNewEvent = () => {
     navigate("/user/create-event");
   };
 
   // Helper flag to check if we are on the base route or the sub-dashboard path
   const isBaseDashboard =
+    isAdminView ||
     location.pathname === "/user/event-management" ||
     location.pathname === "/user/event-management/" ||
     location.pathname === "/user/event-management/dashboard";
 
+  // Helper flag to handle active styles for the Help Centre route
+  const isHelpCentreActive = location.pathname === "/user/event-management/help-centre";
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div style={{ display: "flex", height: "100vh", background: "var(--color-bg-main)" }}>
       {/* --- Sidebar Navigation Framework --- */}
-      <div className="w-64 bg-[#1e2640] text-[#9aa4b7] p-6 flex flex-col overflow-y-auto border-r border-[#151b30]">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1 text-white">
-            <span className="text-[#f59e0b]">EMS</span>
-          </h1>
-          <p className="text-[#64748b] text-xs font-semibold uppercase tracking-wider">Event Management</p>
+      <div className="sidebar-unified">
+        <div className="sidebar-content-unified">
+          <div className="logo-section-unified">
+            <div>
+              <h2>EMS</h2>
+              <p>Event Managements</p>
+            </div>
+
+            <button type="button" aria-label="Close sidebar" onClick={handleCloseSidebar} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <span style={{ fontSize: 18, fontWeight: 'bold' }}>×</span>
+            </button>
+          </div>
+
+          <nav className="menu-unified">
+            {[
+              { path: "dashboard", label: "Dashboard", icon: "📊" },
+              { path: "events", label: "Events", icon: "📅" },
+              { path: "resources", label: "Resources", icon: "👥" },
+              { path: "categories", label: "Categories", icon: "🏷️" },
+              { path: "calendar", label: "Calendar", icon: "📅" },
+            ].map((item) => (
+              <NavLink
+                key={item.path}
+                to={`/user/event-management/${item.path}`}
+                className={({ isActive }) =>
+                  `menu-item-unified ${isActive || (item.path === "dashboard" && isBaseDashboard)
+                    ? "menu-item-active"
+                    : ""
+                  }`
+                }
+              >
+                <span className="mr-3">{item.icon}</span>
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
 
-        <button
-          onClick={handleCreateNewEvent}
-          className="w-full bg-[#ea580c] hover:bg-[#d97706] text-white font-semibold py-3 px-4 rounded-lg mb-8 flex items-center justify-center gap-2 transition shadow-sm"
-        >
-          <Plus size={20} />
-          Create Event
-        </button>
-
-        <nav className="space-y-2 flex-1">
-          {[
-            { path: "dashboard", label: "Dashboard", icon: "📊" },
-            { path: "events", label: "Events", icon: "📅" },
-            { path: "resources", label: "Resources", icon: "👥" },
-            { path: "categories", label: "Categories", icon: "🏷️" },
-            { path: "calendar", label: "Calendar", icon: "📅" },
-          ].map((item) => (
+        {!isAdminView && (
+          <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.12)", paddingTop: "16px" }}>
             <NavLink
-              key={item.path}
-              to={`/user/event-management/${item.path}`}
-              className={({ isActive }) =>
-                `w-full flex items-center px-4 py-3 rounded-lg transition ${isActive || (item.path === "dashboard" && isBaseDashboard)
-                  ? "bg-[#ea580c] font-semibold text-white"
-                  : "hover:bg-[#252f4c] text-[#9aa4b7] hover:text-white"
-                }`
-              }
+              to="/user/event-management/help-centre"
+              className={`menu-item-unified ${isHelpCentreActive ? "menu-item-active" : ""}`}
             >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
+              <HelpCircle size={18} style={{ marginRight: "12px" }} />
+              Help Center
             </NavLink>
-          ))}
-        </nav>
 
-        <div className="space-y-2 pt-4 border-t border-[#151b30]">
-          <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2">
-            <HelpCircle size={18} />
-            Help Center
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-full text-left px-4 py-3 rounded-lg hover:bg-[#252f4c] hover:text-white transition text-[#9aa4b7] flex items-center gap-2"
-          >
-            <LogOut size={18} />
-            Log Out
-          </button>
-        </div>
+            <button
+              onClick={handleLogout}
+              className="logout-unified"
+              style={{ width: "100%" }}
+            >
+              <LogOut size={18} />
+              Log Out
+            </button>
+          </div>
+        )}
       </div>
 
       {/* --- Main Sub-Router Layout View Panel --- */}
-      <div className="flex-1 overflow-auto flex flex-col">
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto" }}>
         {/* Top Header Control Strip */}
-        <div className="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center shrink-0">
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-800">
-              {userData ? `${userData.name}'s Workspace` : "Organization Workspace"}
-            </h2>
-            <p className="text-gray-600 text-sm">Operational performance for Q3 2026</p>
+        <div className="topbar-unified">
+          <div>
+            <h1>{userData ? `${userData.name}'s Workspace` : "Organization Workspace"}</h1>
+            <p>Operational performance for Q3 2026</p>
           </div>
-          <div className="flex gap-4">
-            <button className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold text-gray-700">
+          <div style={{ display: "flex", gap: "16px" }}>
+            <button className="btn-secondary-unified">
               Export Report
             </button>
             <button
               onClick={handleCreateNewEvent}
-              className="px-6 py-2 bg-[#ea580c] hover:bg-[#d97706] text-white rounded-lg transition font-semibold shadow-sm"
+              className="btn-primary-unified"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
             >
-              + New Event
+              <Plus size={20} />
+              New Event
             </button>
           </div>
         </div>
 
         {/* Dynamic Display Portal Container */}
-        <div className="flex-1">
+        <div style={{ flex: 1 }}>
           {isBaseDashboard ? (
             <DashboardOverview
               events={events}
@@ -199,58 +219,58 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
   const completedEvents = events.filter(e => e.status === "Completed").length;
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div style={{ padding: "32px", animation: "fadeIn 0.3s ease-in" }}>
       {/* Metric Cards Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#3b82f6]">
-          <div className="flex justify-between items-start mb-4">
-            <Calendar className="text-[#3b82f6]" size={32} />
-            <span className="text-green-500 font-semibold text-sm">+12%</span>
+      <div className="stats-grid-unified" style={{ marginBottom: "32px" }}>
+        <div className="stats-card-unified">
+          <div className="stats-icon-unified stats-icon-blue">
+            <Calendar size={32} />
           </div>
-          <p className="text-gray-600 font-semibold text-sm mb-1">Upcoming Events</p>
-          <p className="text-3xl font-bold text-gray-800">{upcomingEvents.length}</p>
-          <p className="text-gray-500 text-xs mt-2">14 scheduled this month</p>
+          <div>
+            <h2>{upcomingEvents.length}</h2>
+            <p>Upcoming Events</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#8b5cf6]">
-          <div className="flex justify-between items-start mb-4">
-            <Clock className="text-[#8b5cf6]" size={32} />
-            <span className="text-blue-500 font-semibold text-sm">Steady</span>
+        <div className="stats-card-unified">
+          <div className="stats-icon-unified" style={{ background: "#e0e7ff", color: "#6366f1" }}>
+            <Clock size={32} />
           </div>
-          <p className="text-gray-600 font-semibold text-sm mb-1">Ongoing Today</p>
-          <p className="text-3xl font-bold text-gray-800">
-            {events.filter(e => e.status === "Ongoing").length}
-          </p>
-          <p className="text-gray-500 text-xs mt-2">Across 4 regions</p>
+          <div>
+            <h2>{events.filter(e => e.status === "Ongoing").length}</h2>
+            <p>Ongoing Today</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#10b981]">
-          <div className="flex justify-between items-start mb-4">
-            <Users className="text-[#10b981]" size={32} />
-            <span className="text-gray-600 text-sm">85% of target met</span>
+        <div className="stats-card-unified">
+          <div className="stats-icon-unified stats-icon-green">
+            <Users size={32} />
           </div>
-          <p className="text-gray-600 font-semibold text-sm mb-1">Completed YTD</p>
-          <p className="text-3xl font-bold text-gray-800">{completedEvents}</p>
+          <div>
+            <h2>{completedEvents}</h2>
+            <p>Completed YTD</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 border-l-4 border-[#f59e0b]">
-          <div className="flex justify-between items-start mb-4">
-            <TrendingUp className="text-[#f59e0b]" size={32} />
+        <div className="stats-card-unified">
+          <div className="stats-icon-unified stats-icon-orange">
+            <TrendingUp size={32} />
           </div>
-          <p className="text-gray-600 font-semibold text-sm mb-1">Avg. Client Rating</p>
-          <p className="text-3xl font-bold text-gray-800">4.92</p>
-          <div className="text-yellow-500 text-sm mt-2">★★★★★</div>
+          <div>
+            <h2>4.92</h2>
+            <p>Avg. Client Rating</p>
+          </div>
         </div>
       </div>
 
       {/* Analytical Charts and Summary Breakdown Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-800">Revenue Performance</h3>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-bold text-gray-800">4.5 lakh</span>
-              <span className="text-gray-600 text-sm">Last 6 months</span>
+      <div className="dashboard-grid-unified" style={{ marginBottom: "32px", gridTemplateColumns: "2fr 1fr" }}>
+        <div className="panel-unified">
+          <div style={{ marginBottom: "24px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "8px" }}>Revenue Performance</h3>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "8px" }}>
+              <span style={{ fontSize: "28px", fontWeight: "700", color: "var(--color-text-primary)" }}>4.5 lakh</span>
+              <span style={{ color: "var(--color-text-secondary)", fontSize: "13px" }}>Last 6 months</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={250}>
@@ -264,68 +284,99 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-gradient-to-br from-[#1e2640] to-[#151b30] border border-[#151b30] rounded-lg p-6 shadow-sm text-white flex flex-col justify-between">
+        <div style={{
+          background: "linear-gradient(to bottom right, #0f1624, #1a2a47)",
+          border: "1px solid #1a2a47",
+          borderRadius: "8px",
+          padding: "24px",
+          boxShadow: "0 8px 28px rgba(15, 23, 42, 0.05)",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between"
+        }}>
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#f59e0b]">Quick Insight</h3>
-            <p className="text-sm text-[#9aa4b7]">
+            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "16px", color: "var(--color-secondary-orange)" }}>Quick Insight</h3>
+            <p style={{ fontSize: "13px", color: "var(--color-sidebar-text)" }}>
               💡 Ticket sales for "TechSummit 2026" are 22% higher than last year's average at this stage. Consider releasing the Early Bird phase-2 tickets earlier.
             </p>
           </div>
-          <button className="w-full mt-6 bg-[#ea580c] text-white font-semibold py-2 rounded-lg hover:bg-[#d97706] transition shadow-sm">
+          <button className="btn-primary-unified" style={{ width: "100%", marginTop: "24px" }}>
             View Sales Report
           </button>
         </div>
       </div>
 
       {/* Active Portfolio Data-Table Summary */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-gray-800">Current Portfolio</h3>
+      <div className="panel-unified">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: "600", color: "var(--color-text-primary)" }}>Current Portfolio</h3>
           <button
             onClick={() => navigate("/user/dashboard")}
-            className="text-[#ea580c] hover:text-[#d97706] font-semibold text-sm"
+            className="btn-secondary-unified"
+            style={{ background: "transparent", border: "none", color: "var(--color-primary-orange)", padding: "0" }}
           >
             View All
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%" }}>
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Event Name</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Category</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Date</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Action</th>
+              <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: "600", color: "var(--color-text-secondary)", fontSize: "13px" }}>Event Name</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: "600", color: "var(--color-text-secondary)", fontSize: "13px" }}>Category</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: "600", color: "var(--color-text-secondary)", fontSize: "13px" }}>Date</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: "600", color: "var(--color-text-secondary)", fontSize: "13px" }}>Status</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: "600", color: "var(--color-text-secondary)", fontSize: "13px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {events.slice(0, 3).map((event, idx) => (
-                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                  <td className="py-4 px-4 text-gray-800 font-semibold">{event.title}</td>
-                  <td className="py-4 px-4 text-gray-600">{event.category}</td>
-                  <td className="py-4 px-4 text-gray-600">
+                <tr key={idx} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                  <td style={{ padding: "16px", color: "var(--color-text-primary)", fontWeight: "600" }}>{event.title}</td>
+                  <td style={{ padding: "16px", color: "var(--color-text-secondary)" }}>{event.category}</td>
+                  <td style={{ padding: "16px", color: "var(--color-text-secondary)" }}>
                     {new Date(event.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${event.status === "Planning"
-                        ? "bg-orange-100 text-orange-700"
+                  <td style={{ padding: "16px" }}>
+                    <span style={{
+                      padding: "6px 12px",
+                      borderRadius: "9999px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      background: event.status === "Planning"
+                        ? "#fed7aa"
                         : event.status === "Scheduled"
-                          ? "bg-blue-100 text-blue-700"
+                          ? "#bfdbfe"
                           : event.status === "Ongoing"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                    >
+                            ? "#bbf7d0"
+                            : "#e5e7eb",
+                      color: event.status === "Planning"
+                        ? "#b45309"
+                        : event.status === "Scheduled"
+                          ? "#1e40af"
+                          : event.status === "Ongoing"
+                            ? "#065f46"
+                            : "#6b7280"
+                    }}>
                       {event.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td style={{ padding: "16px" }}>
                     <button
                       onClick={() => navigate(`/user/event-dashboard/${event._id}`)}
-                      className="text-[#ea580c] hover:text-[#d97706] font-semibold text-sm flex items-center gap-1"
+                      style={{
+                        color: "var(--color-primary-orange)",
+                        background: "transparent",
+                        border: "none",
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
                     >
                       <Eye size={16} />
                       View
@@ -337,12 +388,19 @@ function DashboardOverview({ events, handleCreateNewEvent, navigate }) {
           </table>
 
           {events.length === 0 && (
-            <div className="text-center py-12">
-              <AlertCircle className="mx-auto text-gray-400 mb-2" size={48} />
-              <p className="text-gray-600">No events created yet</p>
+            <div style={{ textAlign: "center", padding: "48px 32px" }}>
+              <AlertCircle style={{ margin: "0 auto 8px", color: "#d1d5db" }} size={48} />
+              <p style={{ color: "var(--color-text-secondary)" }}>No events created yet</p>
               <button
                 onClick={handleCreateNewEvent}
-                className="text-[#ea580c] hover:text-[#d97706] font-semibold mt-2"
+                style={{
+                  color: "var(--color-primary-orange)",
+                  background: "transparent",
+                  border: "none",
+                  fontWeight: "600",
+                  marginTop: "8px",
+                  cursor: "pointer"
+                }}
               >
                 Create your first event
               </button>
