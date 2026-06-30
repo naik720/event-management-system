@@ -45,11 +45,11 @@ function Login() {
     const loginTime = new Date().toISOString();
     const isVendor = email.includes("vendor");
     const isStaff = email.includes("staff");
-    
+
     let role = "client";
     let name = "Demo Client User";
     let id = "mock-client-id";
-    
+
     if (isVendor) {
       role = "vendor";
       name = "Raj Catering Services";
@@ -203,7 +203,7 @@ function Login() {
         }
       } catch (error) {
         console.error("Error connecting to backend auth server:", error);
-        
+
         // Fallback demo client login when server is offline/unreachable
         const loginTime = new Date().toISOString();
         const updatedUser = {

@@ -2,31 +2,44 @@ import React from "react";
 
 import {
   getClientDisplayName,
-  getClientInitial,
   getCurrentClient,
 } from "../../services/clientSession";
 
-const Topbar = () => {
+const Topbar = ({ title = "Client Dashboard", subtitle, actions = null }) => {
   const currentClient = getCurrentClient();
   const clientName = getClientDisplayName(currentClient);
   const clientEmail = currentClient.email || "client@example.com";
-  const clientInitial = getClientInitial(currentClient);
+  const clientPhoto = typeof currentClient.photo === "string" ? currentClient.photo.trim() : "";
+  const clientInitial = clientName.trim().charAt(0).toUpperCase() || "C";
+  const pageSubtitle = subtitle || `${currentClient.role || "Client"} module`;
 
   return (
-    <div className="topbar-unified">
-      <div>
-        <h1>Client Dashboard</h1>
-        <p>{currentClient.role || "Client"} module</p>
+    <div className="topbar">
+      <div className="topbar-copy">
+        <h1>{title}</h1>
+        <p>{pageSubtitle}</p>
       </div>
 
-      <div className="profile-box-unified">
-        <div>
-          <h4>{clientEmail}</h4>
-          <p>Welcome back, {clientName}!</p>
-        </div>
+      <div className="topbar-right">
+        {actions ? <div className="topbar-actions">{actions}</div> : null}
 
-        <div className="avatar-unified">
-          {clientInitial}
+        <div className="profile-box">
+          <div className="profile-meta">
+            <h4>{clientEmail}</h4>
+            <p>Welcome back, {clientName}!</p>
+          </div>
+
+          <div>
+            {clientPhoto ? (
+              <div className="avatar avatar-image">
+                <img src={clientPhoto} alt={clientName} />
+              </div>
+            ) : (
+              <div className="avatar" aria-label={clientName}>
+                {clientInitial}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

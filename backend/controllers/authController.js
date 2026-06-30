@@ -189,7 +189,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
     const normalizedEmail = email.trim().toLowerCase();
-    
+
     // Intercept demo client login
     if (normalizedEmail === 'client@gmail.com' && password === 'client@123') {
       return res.json({

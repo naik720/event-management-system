@@ -2,6 +2,7 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 
 const router = express.Router();
+const contactMessages = [];
 
 function getTransporter() {
   const user = process.env.EMAIL_USER || process.env.SMTP_USER;
@@ -19,14 +20,28 @@ function getTransporter() {
 
 router.post("/", async (req, res) => {
   try {
-    const { name, email, subject, message } = req.body || {};
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim();
+    const subject = String(req.body?.subject || "").trim();
+    const message = String(req.body?.message || "").trim();
 
     if (!name || !email || !subject || !message) {
       return res.status(400).json({
         success: false,
-        message: "All contact form fields are required.",
+        message: "Name, email, subject, and message are required.",
       });
     }
+
+    const record = {
+      id: `msg_${Date.now()}`,
+      name,
+      email,
+      subject,
+      message,
+      createdAt: new Date().toISOString(),
+    };
+
+    contactMessages.unshift(record);
 
     const transporter = getTransporter();
     const recipient =
@@ -54,9 +69,10 @@ router.post("/", async (req, res) => {
       console.log("[CONTACT FORM]", { name, email, subject, message });
     }
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Thanks for reaching out. We will get back to you soon.",
+      message: "Message sent successfully. We will contact you soon.",
+      contactId: record.id,
     });
   } catch (error) {
     console.error("Contact form error:", error);
@@ -65,6 +81,10 @@ router.post("/", async (req, res) => {
       message: "Failed to send your message.",
     });
   }
+});
+
+router.get("/debug", (req, res) => {
+  res.json(contactMessages);
 });
 
 module.exports = router;
